@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<!-- Schwamm drüber, Version 0.21 vom 25.10.2026 -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schwamm drüber</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#1f6f66">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Schwamm drüber">
+<style>
+:root{color-scheme:light dark;--bg:#f3f6f5;--card:#fff;--ink:#17302c;--muted:#5d716d;--line:#d9e3e0;--accent:#1f6f66;--on-accent:#fff;--late:#b4492f;--soon:#9a6516;--ok:#3d7a5a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1f1d;--card:#172b28;--ink:#e6f0ee;--muted:#9db3af;--line:#28413d;--accent:#5cbfb2;--on-accent:#08201d;--late:#e58a70;--soon:#e0b25a;--ok:#7bc49a}}
+:root[data-theme="light"]{color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+main{max-width:640px;margin:0 auto;padding:0 14px}
+header{padding:18px 14px 6px;max-width:640px;margin:0 auto}
+header h1{margin:0;font-size:1.6rem;letter-spacing:-.01em}
+h2{font-size:1.05rem;margin:22px 0 8px}
+h2.late{color:var(--late)}
+.panel{display:none}.panel.on{display:block}
+.card{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;border-left:5px solid var(--line);cursor:pointer}
+.card.late{border-left-color:var(--late)}.card.week{border-left-color:var(--soon)}.card.later{border-left-color:var(--ok)}.card.now{border-left-color:var(--soon)}
+.ic{font-size:1.7rem;text-align:center}
+.tx{display:flex;flex-direction:column;min-width:0}
+.tx b{overflow-wrap:anywhere}
+.tx span{font-size:.88rem;color:var(--muted)}
+.tx .late{color:var(--late);font-weight:600}.tx .week{color:var(--soon);font-weight:600}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.done{background:var(--accent);color:var(--on-accent);border:0;border-radius:10px;padding:9px 12px;font-weight:600}
+.empty{color:var(--muted);padding:30px 6px}
+.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);font-size:2rem;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;background:none;border:0;padding:12px 2px;font-size:.92rem;color:var(--muted);font-weight:600}
+nav button.on{color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
+dialog{width:min(92vw,460px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h3{margin:0 0 10px}
+label,.lbl{display:block;font-size:.9rem;color:var(--muted);margin:10px 0 0}
+input,select,textarea{width:100%;margin-top:3px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.row{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+.icons{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.icons button{font-size:1.4rem;width:42px;height:42px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.icons button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.btns{display:flex;gap:8px;margin-top:16px}
+.btns button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.btns .primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}
+.btns .danger{color:var(--late)}
+.hint{font-size:.85rem;color:var(--muted);margin:6px 0 0}
+.stat{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
+.entry{display:flex;gap:10px;padding:6px 0}
+.big{font-size:2rem;font-weight:700;color:var(--accent)}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;display:none;gap:12px;align-items:center;max-width:90vw}
+#toast.on{display:flex}
+#toast button{background:none;border:0;color:var(--accent);font-weight:700;padding:0}
+.data button{display:block;width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--line);background:var(--card)}
+#cat{max-height:88vh;overflow:auto}
+.cat label{display:flex;gap:10px;align-items:flex-start;margin:0;padding:8px 0;border-bottom:1px solid var(--line);color:var(--ink);font-size:1rem}
+.cat input{width:auto;margin-top:5px}
+.cat small{display:block;color:var(--muted);font-size:.85rem}
+.cat h2{margin:16px 0 4px}
+#cat .btns{position:sticky;bottom:-16px;background:var(--card);padding:10px 0}
+.acts{display:flex;flex-direction:column;gap:4px;align-items:stretch}
+.edit{background:none;border:0;color:var(--accent);font-size:.88rem;padding:4px;text-decoration:underline}
+.chead{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);padding:8px 0 4px;border-bottom:2px solid var(--line);margin-top:8px}
+.crow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.cat .cn{flex:1 1 52%;border:0;padding:0}
+.cf{display:flex;align-items:center;gap:6px}
+.cat .cf input{width:62px;margin:0;padding:6px}
+.cat .cf select{width:auto;margin:0;padding:6px}
+.sug{font-size:.85rem;color:var(--muted)}
+.info{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--accent);font-weight:700}
+.ctip{flex:1 0 100%;font-size:.85rem;color:var(--muted);background:var(--bg);border-radius:8px;padding:8px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px}.chips:empty{display:none}
+.cl{font-size:.8rem;color:var(--muted);align-self:center;white-space:nowrap}
+.link{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0;font:inherit}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:6px 12px}
+.chip.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.chk{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:1rem;margin-top:8px}
+.chk input{width:auto;margin:0}
+.acts .sec{display:flex;justify-content:space-between;gap:10px}
+.mini{background:none;border:0;padding:2px 0;font-size:.8rem;color:var(--accent);text-decoration:underline}
+.mini.mute{color:var(--muted)}
+.cr{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+.cat .cr label{border:0;flex:1}
+.cr .mini{padding:8px 4px 8px 12px;font-size:1rem;text-decoration:none}
+header.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:42px;height:42px}
+#welcome{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;text-align:center}
+#welcome[hidden]{display:none}
+.wbox{max-width:360px}
+.wlogo svg{width:140px;height:140px}
+.wbox h1{font-size:2rem;margin:12px 0 4px}
+.wsub{color:var(--muted);margin:0 0 28px;font-size:1.1rem}
+#w-go{width:100%;padding:14px;border-radius:12px;border:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:1.1rem;margin-bottom:14px}
+.wsub2{color:var(--accent);font-weight:700;font-size:1.05rem;margin:0 0 28px}
+.tx .ex{color:var(--accent);font-weight:600}
+.exrow{display:flex;gap:6px;align-items:center;margin-top:6px}
+.exrow input.ex-t{flex:1;min-width:0;margin:0}
+.exrow input.ex-n{width:62px;margin:0}
+#cat-q{position:sticky;top:-16px;z-index:2;margin-bottom:6px}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;text-align:center}
+.plan-btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:1rem}
+:root{--garten:#6a8f1f}
+@media (prefers-color-scheme:dark){:root{--garten:#a8c95a}}
+.gwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-top:8px}
+.ginner{min-width:930px}
+.grow{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+.grow:last-child{border-bottom:0}
+.glabel{position:sticky;left:0;z-index:2;flex:none;width:140px;padding:6px 8px;background:var(--card);font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-right:1px solid var(--line);text-align:left;color:var(--ink)}
+button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:.85rem;color:var(--accent);font-weight:600}
+.gtrack{position:relative;flex:1 0 780px;height:28px;background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(100%/12 - 1px),var(--line) calc(100%/12 - 1px),var(--line) calc(100%/12))}
+.ghead .gtrack{display:flex;height:auto;background:none}
+.gm{flex:1;text-align:center;font-size:.78rem;padding:3px 0;color:var(--muted);line-height:1.2}
+.gsec .glabel{font-weight:700}
+.gsec{background:var(--bg)}
+.gsec .glabel{background:var(--bg)}
+.gbar{position:absolute;top:6px;height:16px;min-width:10px;border-radius:8px;border:0;padding:0;background:var(--accent)}
+.gbar.garten{background:var(--garten)}
+.gbar.late{background:var(--late)}
+.gbar.proj{opacity:.4}
+.gtoday{position:absolute;top:0;bottom:0;width:2px;background:var(--late);opacity:.55;pointer-events:none}
+.gband{position:absolute;left:0;right:0;top:11px;height:6px;border-radius:3px;background:var(--muted);opacity:.35}
+.glegend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted);margin-top:10px}
+.glegend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-2px;margin-right:4px}
+.gl1{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.gl2{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.gl3{background:color-mix(in srgb,var(--accent) 42%,transparent)}
+.gl4{background:color-mix(in srgb,var(--accent) 58%,transparent)}
+.gfl{padding:6px 10px;font-size:.82rem;color:var(--muted);border-bottom:1px solid var(--line);background:var(--bg)}
+:root{--c-keller:#3b7ea1;--c-rund:#8a5aa0}
+@media (prefers-color-scheme:dark){:root{--c-keller:#7db7d8;--c-rund:#c39bd3}}
+.hbars{display:flex;gap:3px;align-items:flex-end;height:160px;margin-top:8px}
+.hcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-width:0}
+.hnum{text-align:center;font-size:.72rem;color:var(--muted);min-height:14px}
+.hstack{display:flex;flex-direction:column-reverse;border-radius:4px 4px 0 0;overflow:hidden}
+.hseg{min-height:3px}
+.hlab{text-align:center;font-size:.7rem;color:var(--muted);padding-top:3px}
+.hdonut{display:flex;align-items:center;gap:16px;margin-top:8px}
+.hdonut svg{width:130px;height:130px;flex:none;color:var(--ink)}
+.hleg div{font-size:.88rem;margin:4px 0}
+.hleg i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:6px}
+.rk{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.9rem}
+.rkn{flex:0 0 42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rkb{flex:1;height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.rkb i{display:block;height:100%;background:var(--accent)}
+.data .danger{color:var(--late);border-color:var(--late)}
+.tx .where{color:var(--ink);font-weight:600}
+.entry .mini{align-self:center}
+</style>
+</head>
+<body>
+<header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1></header>
+<main>
+  <section id="aufgaben" class="panel on"><div id="hchips" class="chips"></div><div id="hrooms" class="chips"></div><div id="hlist"></div></section>
+  <section id="historie" class="panel"></section>
+  <section id="garten" class="panel"><div id="gchips" class="chips"></div><div id="glist"></div></section>
+  <section id="jahr" class="panel"></section>
+  <section id="daten" class="panel data">
+    <h2>Einstellungen</h2>
+    <label class="chk"><input type="checkbox" id="set-garten">Gartenbereich aktivieren</label>
+    <p class="hint">Zeigt einen eigenen Reiter „Garten“ für Rasen, Hecken, Obstbäume und mehr. Schon angelegte Garten-Aufgaben bleiben gespeichert, wenn du den Bereich wieder ausschaltest.</p>
+    <h2>Daten sichern</h2>
+    <p class="hint">Alle Aufgaben und die Historie werden nur in diesem Browser auf diesem Gerät gespeichert. Mit einer Sicherung kannst du sie aufbewahren oder auf ein anderes Gerät übertragen.</p>
+    <button id="btn-export">Sicherung speichern</button>
+    <button id="btn-import">Sicherung laden</button>
+    <input id="file-import" type="file" accept="application/json,.json" hidden>
+    <button id="btn-welcome">Startseite ansehen</button>
+    <h2>Zurücksetzen</h2>
+    <button id="btn-wipe" class="danger">Alle Daten löschen</button>
+    <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
+    <p class="hint">Version 0.21 vom 25.10.2026</p>
+  </section>
+</main>
+<button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
+<dialog id="cat"><h3>Aufgabe hinzufügen</h3>
+  <p class="hint">Wähle eine Aufgabe aus. Im nächsten Schritt siehst du die Vorschläge für Wiederholung und Termin und kannst sie ändern. Mit ✕ blendest du Vorschläge aus, die du nicht brauchst.</p>
+  <input id="cat-q" type="search" placeholder="Suchen …" autocomplete="off">
+  <div id="cat-list" class="cat"></div>
+  <div class="btns"><button type="button" id="cat-own">Eigene Aufgabe</button><button type="button" id="cat-close">Abbrechen</button><button type="button" class="primary" id="cat-add" disabled>Weiter</button></div>
+</dialog>
+<dialog id="mv"><form id="mvf">
+  <h3 id="mv-title">Verschieben</h3>
+  <label><span id="mv-albl">Neuer Termin</span><input id="mv-a" type="date" required></label>
+  <label id="mv-bwrap">Neues Ende<input id="mv-b" type="date"></label>
+  <div id="mv-modes">
+    <label class="chk"><input type="radio" name="mvm" value="einmal" checked>Nur dieses Mal</label>
+    <label class="chk"><input type="radio" name="mvm" value="rhythmus">Auch den Rhythmus verschieben</label>
+  </div>
+  <p class="hint" id="mv-hint"></p>
+  <div class="btns"><button type="button" id="mv-cancel">Abbrechen</button><button class="primary">Verschieben</button></div>
+</form></dialog>
+<dialog id="he"><form id="hef">
+  <h3 id="he-title">Erledigt-Eintrag</h3>
+  <label>Erledigt am<input id="he-date" type="date" required></label>
+  <p class="hint" id="he-hint"></p>
+  <div class="btns"><button type="button" id="he-del" class="danger">Löschen</button><button type="button" id="he-cancel">Abbrechen</button><button class="primary">Speichern</button></div>
+</form></dialog>
+<div id="welcome" hidden><div class="wbox">
+  <div class="wlogo" id="wlogo"></div>
+  <h1>Schwamm drüber</h1>
+  <p class="wsub" style="margin-bottom:6px">Einmal eingetragen, nie mehr vergessen</p>
+  <p class="wsub2">Haus und Garten im Rhythmus</p>
+  <button id="w-go">Jetzt loslegen</button>
+  <p class="hint">Deine Daten bleiben auf diesem Gerät. Eine Sicherung findest du unter „Daten“.</p>
+</div></div>
+<div id="toast"><span id="toast-text"></span><button id="toast-undo">Rückgängig</button></div>
+<nav>
+  <button data-tab="aufgaben" class="on">Haus</button>
+  <button data-tab="garten" id="nav-garten" style="display:none">Garten</button>
+  <button data-tab="jahr">Jahr</button>
+  <button data-tab="historie">Historie</button>
+  <button data-tab="daten">Daten</button>
+</nav>
+
+<dialog id="dlg">
+<form id="frm">
+  <h3 id="ftitle">Neue Aufgabe</h3>
+  <div id="f-donewrap" class="plan" style="text-align:left;margin-top:0"><div class="lbl" style="margin-top:0">Als erledigt eintragen</div>
+    <div style="display:flex;gap:8px;align-items:center"><input id="f-donedate" type="date" style="margin:0"><button type="button" id="f-done" class="plan-btn" style="width:auto;padding:9px 14px">Eintragen</button></div>
+    <p class="hint">Für Aufgaben, die du vergessen hattest abzuhaken. Der nächste Termin richtet sich nach diesem Datum.</p></div>
+  <label>Name<input id="f-name" required maxlength="80" placeholder="z. B. Fenster putzen"></label>
+    <label>Bereich<select id="f-bereich"></select></label>
+  <p class="hint" id="f-bhint"></p>
+  <label id="f-unterwrap">Kategorie<input id="f-unter" list="gkat" maxlength="40" placeholder="z. B. Rasen oder Gemüse"></label><datalist id="gkat"></datalist>
+  <label>Raum oder Ort<input id="f-raum" list="raeume" maxlength="40" placeholder="z. B. Bad oben"></label>
+  <datalist id="raeume"></datalist>
+  <label>Art<select id="f-typ">
+    <option value="wiederkehrend">Wiederkehrend</option>
+    <option value="einmalig">Einmalig</option>
+    <option value="ohne">Ohne Termin (nur dokumentieren)</option>
+  </select></label>
+  <div id="f-iv" class="row">
+    <label>Wiederholen alle<input id="f-n" type="number" min="1" max="999" value="1"></label>
+    <label>Einheit<select id="f-u"><option>Tage</option><option>Wochen</option><option>Monate</option></select></label>
+  </div>
+  <label id="f-modwrap">Nächster Termin<select id="f-modus"><option value="erledigung">Ab dem Erledigungstag</option><option value="raster">Nach festem Rhythmus</option></select></label>
+  <p class="hint" id="f-ivhint"></p>
+  <label id="f-tmwrap">Termin<select id="f-tm"><option value="offen">Noch nicht festlegen</option><option value="datum">Festes Datum</option><option value="zeitraum">Zeitraum (von bis)</option></select></label>
+  <p class="hint" id="f-tmhint"></p>
+  <div id="f-tmdates"><label id="f-datewrap"><span id="f-datelbl">Datum</span><input id="f-date" type="date"></label><label id="f-biswrap">Bis<input id="f-bis" type="date"></label></div>
+  <p class="hint" id="f-tipp"></p>
+  <div id="f-exwrap"><div class="lbl">Zusätze (optional)</div>
+    <p class="hint">Arbeiten, die nur bei jedem x-ten Erledigen anfallen, z. B. Entkalken. Auf der Karte steht dann „Diesmal zusätzlich“.</p>
+    <div id="f-extras"></div>
+    <button type="button" id="f-exadd" class="mini">+ Zusatz hinzufügen</button></div>
+  <label>Notiz<textarea id="f-note" rows="2" maxlength="300"></textarea></label>
+  <div class="btns">
+    <button type="button" id="f-del" class="danger">Löschen</button>
+    <button type="button" id="f-cancel">Abbrechen</button>
+    <button class="primary">Speichern</button>
+  </div>
+</form>
+</dialog>
+
+<script>
+/* Datenmodell
+   Aufgabe:  { id, name, icon, bereich, raum, notiz,
+               typ: 'wiederkehrend' | 'einmalig' | 'ohne',
+               n, einheit ('Tage'|'Wochen'|'Monate'),   // nur wiederkehrend
+               faellig: 'JJJJ-MM-TT' | null, erledigt: false }
+   Historie: { id, taskId, name, icon, datum: 'JJJJ-MM-TT' }          */
+(function(){
+const KEY='haushalt-v1';
+const BEREICHE={'Im Haus':'Küche, Bäder, Zimmer, Flur','Keller und Nebengebäude':'Keller, Garage, Werkstatt, Schuppen','Rund ums Haus':'Dachrinne, Hauseingang, Einfahrt, Fugen','Garten':'Rasen, Beete, Bäume und Sträucher'};
+const BK={H:'Im Haus',K:'Keller und Nebengebäude',R:'Rund ums Haus',G:'Garten'};
+const UNTER=['Rasen','Hecken','Obstbäume','Beeren','Gemüse','Kräuter','Bäume und Sträucher','Allgemein'];
+const RASTER=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln'];
+const WKEY='haushalt-welcome-v1';
+const LOGO='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><g transform="rotate(-10 60 62)"><rect x="14" y="32" width="92" height="58" rx="14" fill="#f2c230"/><path d="M14 72H106V76A14 14 0 0 1 92 90H28A14 14 0 0 1 14 76Z" fill="#2e9d6f"/><ellipse cx="36" cy="50" rx="6" ry="4.5" fill="#d6a21a"/><ellipse cx="64" cy="46" rx="7" ry="5" fill="#d6a21a"/><ellipse cx="88" cy="56" rx="5" ry="4" fill="#d6a21a"/><ellipse cx="52" cy="62" rx="4.5" ry="3.5" fill="#d6a21a"/></g><circle cx="98" cy="24" r="10" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/><circle cx="114" cy="44" r="5" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/><circle cx="80" cy="12" r="5" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/></svg>';
+const GRUND=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln','Blumen gießen','Lichtschalter und Türgriffe desinfizieren','Couch absaugen','Spülmaschine reinigen','Waschmaschine reinigen','Backofen reinigen','Küchenabzug saubermachen','Staubsauger reinigen','Wasserkocher entkalken','Küchenvorräte überprüfen und aussortieren','Fenster putzen','Hauseingang reinigen','Rasen mähen','Rasen düngen','Bäume und Sträucher schneiden','Gartenmöbel winterfest machen','Wasserleitungen im Garten winterfest machen','Gartengeräte reinigen und pflegen'];
+const ALT={'Wohnbereich':'Im Haus','Haus außen':'Rund ums Haus','Außenanlagen':'Garten'};
+const BICON={'Im Haus':'🏠','Keller und Nebengebäude':'📦','Rund ums Haus':'🏡','Garten':'🌳'};
+const ICONMAP=[['gartenmöbel','🪑'],['wasserleitung','🚰'],['gartengeräte','🛠️'],['kübelpflanzen','🪴'],['gewächshaus','🏡'],['hochbeet','🥕'],['beete winterfest','❄️'],['beete','🥕'],['beerensträucher','🫐'],['erdbeer','🍓'],['obstbäume','🍎'],['kompost','♻️'],['hecke','✂️'],['kräuter','🌿'],['vertikutieren','🧹'],['düngen','🌾'],['bettwäsche','🛏️'],['couch','🛋️'],['kissen','🛋️'],['waschmaschine','🧺'],['wäsche','🧺'],['spülmaschine','🍽️'],['kaffee','☕'],['milchsystem','☕'],['wasserkocher','🫖'],['backofen','🍳'],['mikrowelle','🍲'],['airfryer','🍟'],['abzug','💨'],['vorräte','🥫'],['küche','🍳'],['bad','🛁'],['fenster','🪟'],['spiegel','🪞'],['blume','🌷'],['einkauf','🛒'],['dachrinne','🏠'],['hauseingang','🚪'],['einfahrt','🚪'],['unkraut','🌿'],['baum','🌳'],['bäume','🌳'],['rasen','🌱'],['garage','🚗'],['werkstatt','🔧'],['schuppen','🏚️'],['licht','💡'],['schrank','🗄️'],['tisch','🪑'],['fußleiste','🧽'],['wisch','🧽'],['staubsauger','🌀'],['staub','🧹'],['saug','🧹'],['keller','📦']];
+/* Vorschlagsliste: [Name, Bereich, Art, n, Einheit, Startmonat des guten Zeitfensters (0 = egal), Tipp] */
+const W='wiederkehrend',O='ohne';
+const KATALOG=[
+['Saugen','H',W,1,'Wochen',0,'Einmal pro Woche, Flur und Küche bei Bedarf öfter. Erst Staub wischen, dann saugen. Alle 4 Wochen auch unter Möbeln und Betten saugen.',null,[['Unter Möbeln und Betten saugen',4]]],
+['Wischen','H',W,2,'Wochen',0,'Alle 2 Wochen, nach dem Saugen. Küche und Bad bei Bedarf öfter.'],
+['Staub wischen','H',W,1,'Wochen',0,'Wöchentlich mit feuchtem Tuch, von oben nach unten. Alle 4 Wochen auch Lampen, Regalböden und Bilderrahmen.',null,[['Lampen, Regalböden und Bilderrahmen abstauben',4]]],
+['Küche putzen','H',W,1,'Wochen',0,'Arbeitsflächen täglich abwischen, gründlich einmal pro Woche. Den Kühlschrank etwa monatlich auswischen, den Abfluss des Spülbeckens etwa alle 2 Monate reinigen.',null,[['Kühlschrank auswischen',4],['Spülbecken-Abfluss reinigen',8]]],
+['Bad putzen','H',W,1,'Wochen',0,'Wöchentlich. Duschwand und Armaturen nach dem Duschen abziehen gegen Kalk. Den Duschkopf etwa monatlich entkalken, den Abfluss etwa alle 2 Monate reinigen.',null,[['Duschkopf und Armaturen entkalken',4],['Abfluss reinigen',8]]],
+['Wäsche waschen','H',W,1,'Wochen',0,'Je nach Haushalt 1 bis 3 Mal pro Woche. Volle Maschinen sparen Energie.'],
+['Einkaufen','H',W,1,'Wochen',0,'Einmal pro Woche mit Einkaufsliste, Vorräte vorher kurz prüfen.'],
+['Blumen gießen','H',W,1,'Wochen',0,'Bei vielen Pflanzen reicht einmal pro Woche, durstige Pflanzen öfter. Fingerprobe: oben trocken heißt gießen. Am besten morgens. In der Wachstumszeit (März bis September) etwa alle 4 Wochen düngen.',null,[['Pflanzen düngen (nur März bis September)',4]]],
+['Spiegel putzen','H',W,2,'Wochen',0,'Alle 1 bis 2 Wochen mit Mikrofasertuch, dann ohne Streifen.'],
+['Lichtschalter und Türgriffe desinfizieren','H',W,1,'Monate',0,'Einmal im Monat reicht meist, in der Erkältungszeit alle 2 Wochen.'],
+['Bettwäsche wechseln','H',W,2,'Wochen',0,'Alle 2 Wochen, im Sommer oder bei starkem Schwitzen wöchentlich. Mit 60 Grad waschen. Etwa alle 8 Wochen die Matratze absaugen und lüften.',null,[['Matratze absaugen und lüften',4]]],
+['Mikrowelle reinigen','H',W,2,'Wochen',0,'Alle 2 Wochen. Schale mit Wasser und Zitrone erhitzen, dann auswischen.'],
+['Airfryer reinigen','H',W,1,'Wochen',0,'Korb und Schublade nach jedem Gebrauch auswaschen, einmal pro Woche gründlich. Etwa monatlich auch Heizspirale und Innenraum auswischen, nur ausgesteckt und abgekühlt.',null,[['Heizspirale und Innenraum auswischen',4]]],
+['Couch absaugen','H',W,1,'Monate',0,'Monatlich mit Polsterdüse, Kissen vorher ausklopfen.'],
+['Fußleisten abstauben','H',W,1,'Monate',0,'Monatlich, am besten zusammen mit dem Staubwischen.'],
+['Wasserkocher entkalken','H',W,6,'Wochen',0,'Alle 4 bis 8 Wochen, bei hartem Wasser öfter. Zitronensäure verwenden und gut nachspülen.'],
+['Kaffeemaschine reinigen','H',W,1,'Wochen',0,'Wöchentlich Brühgruppe und Behälter reinigen, bei Vollautomaten mit Milchsystem auch dieses gründlich. Die Zusätze erscheinen automatisch zum passenden Zeitpunkt (Tablette etwa monatlich, Entkalken etwa alle 2 Monate, je nach Wasserhärte). Herstellerangaben beachten.',null,[['Mit Reinigungstablette reinigen',4],['Entkalken',8]]],
+['Spülmaschine reinigen','H',W,1,'Monate',0,'Sieb monatlich reinigen (bei starker Nutzung öfter) und die Dichtung auswischen. Etwa alle 3 Monate zusätzlich ein Leerlauf mit Maschinenreiniger.',null,[['Leerlauf mit Maschinenreiniger',3]]],
+['Waschmaschine reinigen','H',W,2,'Monate',0,'Alle 2 Monate Dichtung und Waschmittelschublade auswischen und einen Leerlauf mit mindestens 60 Grad laufen lassen (wer viel bei 30 bis 40 Grad wäscht, eher monatlich). Das Flusensieb etwa alle 4 Monate reinigen. Die Tür danach offen lassen.',null,[['Flusensieb reinigen',2]]],
+['Staubsauger reinigen','H',W,3,'Monate',0,'Alle 3 Monate die Bürste von Haaren befreien und Beutel oder Behälter prüfen (Beutel wechseln, wenn etwa zwei Drittel voll). Etwa alle 6 Monate den Filter auswaschen oder wechseln, je nach Herstellerangabe.',null,[['Filter auswaschen oder wechseln',2]]],
+['Küchenabzug saubermachen','H',W,3,'Monate',0,'Fettfilter alle 1 bis 3 Monate, je nach Kochhäufigkeit. Oft spülmaschinengeeignet. Bei Umluft den Aktivkohlefilter etwa alle 6 Monate wechseln.',null,[['Aktivkohlefilter wechseln (nur bei Umluft)',2]]],
+['Backofen reinigen','H',W,3,'Monate',0,'Alle 3 Monate oder nach starken Spritzern. Pyrolyse- oder Reinigungsprogramm nutzen, wenn vorhanden.'],
+['Küchenvorräte überprüfen und aussortieren','H',W,3,'Monate',0,'Alle 3 Monate Haltbarkeit prüfen, Älteres nach vorne stellen.'],
+['Kissen waschen','H',W,6,'Monate',0,'Kissenfüllungen bis zu 2 Mal im Jahr, Bezüge öfter. Pflegeetikett beachten.'],
+['Schränke innen reinigen','H',W,6,'Monate',3,'Zweimal im Jahr, z. B. im Frühjahr und Herbst. Ein Schrank pro Woche ist leichter als alle auf einmal.'],
+['Fenster putzen','H',W,6,'Monate',4,'Zweimal im Jahr, im Frühjahr (April) und Herbst (Oktober). Bei bedecktem Himmel putzen, sonst trocknet es streifig.'],
+['Esstisch schleifen und ölen','H',W,12,'Monate',0,'Je nach Beanspruchung alle 6 bis 12 Monate ölen. Schleifen nur bei Flecken oder Kratzern.'],
+['Keller saugen','K',W,1,'Monate',0,'Monatlich. Spinnweben und Staub vorher entfernen.'],
+['Keller aufräumen und aussortieren','K',W,12,'Monate',3,'Einmal im Jahr Regale und Kisten durchsehen, Aussortiertes entsorgen und dabei Regale und Boden reinigen. Gleich auf Feuchtigkeit und Schimmel achten.'],
+['Garage aufräumen und reinigen','K',W,6,'Monate',3,'Im Frühjahr (Streusalz rauskehren) und im Herbst vor dem Winter.'],
+['Werkstatt aufräumen und reinigen','K',W,6,'Monate',0,'Alle 6 Monate Staub und Späne aufsaugen, Werkzeug zurück an den Platz und Aussortiertes entsorgen.'],
+['Schuppen aufräumen und reinigen','K',W,6,'Monate',3,'Im Frühjahr zum Start der Gartensaison und im Herbst vor dem Winter.'],
+['Dachrinnen reinigen','R',W,6,'Monate',11,'Ein- bis zweimal im Jahr, wichtigster Termin im November nach dem Laubfall. Nur mit sicherer Leiter oder vom Fachbetrieb.'],
+['Hauseingang reinigen','R',W,1,'Monate',0,'Einmal im Monat gründlich fegen und feucht wischen, zwischendurch bei Bedarf kurz Schmutz wegfegen. Im Herbst wegen Laub öfter.'],
+['Einfahrt sauber machen','R',W,6,'Monate',4,'Im Frühjahr kehren oder abspritzen, im Herbst Laub entfernen. Trockenen Tag wählen.'],
+['Unkraut in den Fugen entfernen','R',W,12,'Monate',5,'Ein- bis zweimal im Jahr bei Einfahrt, Terrasse und Wegen: im Frühjahr, bei Bedarf noch einmal im Spätsommer, am besten nach Regen. Fugenkratzer oder Abflammgerät nutzen. Salz, Essig und Chemie sind auf befestigten Flächen nicht erlaubt.'],
+['Rasen mähen','G',O,0,'',0,'Von April bis Oktober etwa wöchentlich bei Wachstum, nur bei trockenem Rasen und nicht kürzer als 4 cm. Hier zählt, wann und wie oft.','Rasen'],
+['Rasen düngen','G',W,6,'Monate',4,'Meist im Frühjahr (April) und im Herbst. Bei Wachstum und nicht bei Frost oder Trockenheit düngen, danach wässern.','Rasen'],
+['Rasen vertikutieren','G',W,12,'Monate',4,'Einmal im Jahr im Frühjahr, wenn der Rasen wächst und es nicht mehr friert. Danach nachsäen und düngen.','Rasen'],
+['Hecke schneiden','G',W,12,'Monate',6,'Formschnitt ein- bis zweimal im Jahr, z. B. Ende Juni und bei Bedarf im September. Vorher auf brütende Vögel achten. Starker Rückschnitt nur vom 1. Oktober bis 28. Februar erlaubt.','Hecken'],
+['Obstbäume im Winter schneiden','G',W,12,'Monate',2,'Winterschnitt bei Apfel und Birne meist von Januar bis März an frostfreien Tagen. Er fördert den Neuaustrieb.','Obstbäume'],
+['Obstbäume im Sommer schneiden','G',W,12,'Monate',8,'Sommerschnitt im Juli oder August bremst das Wachstum. Kirschen am besten direkt nach der Ernte schneiden.','Obstbäume'],
+['Bäume und Sträucher schneiden','G',W,12,'Monate',2,'Starker Rückschnitt nur vom 1. Oktober bis 28. Februar erlaubt, leichter Formschnitt ganzjährig. Frühjahrsblüher erst nach der Blüte.','Bäume und Sträucher'],
+['Beete vorbereiten','G',W,12,'Monate',3,'Im März oder April den Boden lockern und Kompost einarbeiten, sobald er weder gefroren noch nass ist.','Gemüse'],
+['Beete im Herbst abräumen und mulchen','G',W,12,'Monate',10,'Im Oktober oder November abgeerntete Beete abräumen und den Boden mulchen oder mit Gründüngung bedecken.','Gemüse'],
+['Beerensträucher schneiden','G',W,12,'Monate',2,'Johannis- und Stachelbeeren im Spätwinter auslichten, Herbsthimbeeren bodennah abschneiden.','Beeren'],
+['Obstbäume düngen und mulchen','G',W,12,'Monate',3,'Im Frühjahr mit Kompost oder Obstdünger versorgen und die Baumscheibe mulchen.','Obstbäume'],
+['Mediterrane Kräuter zurückschneiden','G',W,12,'Monate',3,'Salbei, Thymian und Rosmarin im Frühjahr kräftig kürzen, aber nicht ins alte Holz schneiden. Lavendel nach der Blüte.','Kräuter'],
+['Frostempfindliche Kräuter ins Haus holen','G',W,12,'Monate',10,'Rosmarin und Zitronenverbene vor den ersten Frösten an einen hellen, frostfreien Platz bringen.','Kräuter'],
+['Kompost umsetzen','G',W,6,'Monate',4,'Im Frühjahr und im Herbst umsetzen. Reifer Kompost eignet sich zum Düngen der Beete.','Allgemein'],
+['Gartengeräte reinigen und pflegen','G',W,12,'Monate',11,'Im Spätherbst Geräte reinigen, Klingen schärfen und Metallteile einölen.','Allgemein'],
+['Wasserleitungen im Garten winterfest machen','G',W,12,'Monate',10,'Vor dem ersten Frost Außenwasserhähne und Schläuche entleeren, damit nichts einfriert.','Allgemein'],
+['Hochbeet auffüllen','G',W,12,'Monate',3,'Die Erde setzt sich im Lauf des Jahres. Im Frühjahr Erde und Kompost nachfüllen.','Gemüse'],
+['Beete winterfest machen (Gärtnervlies, Mulch)','G',W,12,'Monate',11,'Im November Beete mit Mulch oder Gärtnervlies schützen, bei Frost auch empfindliche Kulturen und Erdbeeren abdecken.','Gemüse'],
+['Kübelpflanzen winterfest machen','G',W,12,'Monate',10,'Vor den ersten Frösten ins Haus holen oder im Freien mit Vlies und Jute einpacken und vor Staunässe schützen.','Allgemein'],
+['Gartenmöbel winterfest machen','G',W,12,'Monate',10,'Reinigen, gut trocknen lassen und abdecken oder einlagern.','Allgemein'],
+['Gewächshaus reinigen','G',W,12,'Monate',2,'Im Spätwinter Scheiben und Gestänge reinigen, damit mehr Licht ankommt.','Allgemein'],
+];
+let state={tasks:[],history:[],settings:{garten:false}},gFilter='Alle',hB='Alle',hR='Alle',tab='aufgaben',undoSnap=null,toastTimer=null,editId=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>new Date(s+'T00:00:00');
+const today=()=>iso(new Date());
+const diff=(a,b)=>Math.round((parse(b)-parse(a))/86400000);
+const fmt=s=>{const d=parse(s);return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function addIv(s,n,u){const d=parse(s);n=+n;if(u==='Tage')d.setDate(d.getDate()+n);else if(u==='Wochen')d.setDate(d.getDate()+7*n);else d.setMonth(d.getMonth()+n);return iso(d);}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&Array.isArray(p.tasks)&&Array.isArray(p.history)){state=p;state.tasks.forEach(t=>{t.bereich=ALT[t.bereich]||t.bereich;});state.settings=state.settings||{garten:state.tasks.some(t=>t.bereich==='Garten')};}}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+const year=()=>String(new Date().getFullYear());
+const countYear=id=>state.history.filter(h=>h.taskId===id&&h.datum.startsWith(year())).length;
+const lastDone=id=>state.history.filter(h=>h.taskId===id).map(h=>h.datum).sort().pop();
+
+function freq(n,u){if(n===1)return u==='Tage'?'täglich':u==='Wochen'?'jede Woche':'jeden Monat';return 'alle '+n+' '+u;}
+function iconFor(o){const s=(o.name||'').toLowerCase();for(const k of ICONMAP)if(s.includes(k[0]))return k[1];return BICON[o.bereich]||'✅';}
+function windowFor(m){const now=new Date(),y=now.getFullYear()+(m<now.getMonth()+1?1:0);return [iso(new Date(y,m-1,1)),iso(new Date(y,m,0))];}
+function nextWin(m){const now=new Date(),y=now.getFullYear();if(now.getMonth()+1===m)return today();const f=new Date(y,m-1,1);return iso(f>now?f:new Date(y+1,m-1,1));}
+function dueInfo(t){
+  if(t.typ!=='ohne'&&!t.faellig)return ['noch kein Termin'+(t.typ==='wiederkehrend'?', '+freq(t.n,t.einheit)+', der nächste Termin entsteht beim Erledigen':''),''];
+  if(t.bis&&t.faellig&&t.bis>=t.faellig){
+    const T=today(),r=fmt(t.faellig).slice(0,6)+' bis '+fmt(t.bis);
+    let txt,cls='';
+    if(T>t.bis){const d=diff(t.bis,T);txt='Zeitraum '+r+' abgelaufen seit '+d+(d===1?' Tag':' Tagen');cls='late';}
+    else if(T>=t.faellig){txt='jetzt im Zeitraum, '+r;cls='week';}
+    else txt='Zeitraum '+r;
+    if(t.typ==='wiederkehrend')txt+=', '+freq(t.n,t.einheit);
+    return [txt,cls];
+  }
+  if(t.typ==='ohne'||!t.faellig){
+    const c=countYear(t.id),l=lastDone(t.id);
+    return [c+(c===1?' Mal':' Mal')+' in diesem Jahr'+(l?', zuletzt am '+fmt(l):', noch nie erledigt'),''];
+  }
+  const d=diff(today(),t.faellig);
+  let txt,cls='';
+  if(d<0){txt='überfällig seit '+(-d)+(d===-1?' Tag':' Tagen');cls='late';}
+  else if(d===0){txt='heute fällig';cls='week';}
+  else if(d===1){txt='morgen fällig';cls='week';}
+  else{txt='fällig am '+fmt(t.faellig);if(d<=7)cls='week';}
+  if(t.typ==='wiederkehrend')txt+=', '+freq(t.n,t.einheit);
+  return [txt,cls];
+}
+function ortText(t){
+  const w=t.bereich==='Garten'?((t.unter&&t.unter!=='Allgemein')?t.unter:''):(t.raum||'');
+  if(!w)return '';
+  const dup=state.tasks.some(x=>x.id!==t.id&&!x.erledigt&&x.name===t.name);
+  return (!dup&&t.name.toLowerCase().includes(w.toLowerCase()))?'':w;
+}
+function card(t,k){
+  const ort=ortText(t);
+  const [txt,cls]=dueInfo(t);
+  const ex=dueExtras(t);
+  return '<article class="card '+k+'"><div class="ic">'+esc(iconFor(t))+'</div><div class="tx"><b>'+esc(t.name)+'</b><span class="where">'+esc(ort)+'</span><span class="'+cls+'">'+esc(txt)+'</span>'+(ex.length?'<span class="ex">Diesmal zusätzlich: '+esc(ex.join(', '))+'</span>':'')+'</div><div class="acts"><button class="done" data-done="'+t.id+'">Erledigt</button><div class="sec">'+(t.faellig?'<button class="mini" data-move="'+t.id+'">Verschieben</button>':'')+'<button class="mini mute" data-edit="'+t.id+'">Bearbeiten</button></div></div></article>';
+}
+function renderTasks(id,keep,empty){
+  const act=state.tasks.filter(t=>!t.erledigt&&keep(t)),T=today();
+  const g={late:[],now:[],week:[],later:[],plan:[],none:[]};
+  act.forEach(t=>{
+    if(t.typ==='ohne')g.none.push(t);else if(!t.faellig)g.plan.push(t);
+    else if(t.bis&&t.bis>=t.faellig){
+      if(T>t.bis)g.late.push(t);else if(T>=t.faellig)g.now.push(t);else(diff(T,t.faellig)<=7?g.week:g.later).push(t);
+    }
+    else{const d=diff(T,t.faellig);(d<0?g.late:d<=7?g.week:g.later).push(t);}
+  });
+  ['late','week','later'].forEach(k=>g[k].sort((a,b)=>a.faellig.localeCompare(b.faellig)));
+  g.now.sort((a,b)=>a.bis.localeCompare(b.bis));
+  [g.none,g.plan].forEach(arr=>arr.sort((a,b)=>a.name.localeCompare(b.name,'de')));
+  const secs=[['late','Überfällig'],['now','Zeitraum läuft gerade'],['week','In den nächsten 7 Tagen'],['later','Später'],['plan','Noch nicht eingeplant'],['none','Ohne Termin']];
+  let h='';
+  secs.forEach(([k,title])=>{if(g[k].length)h+='<h2 class="'+k+'">'+title+'</h2>'+(k==='plan'?'<p class="hint">Setze über „Bearbeiten“ einen Termin, oder hake die Aufgabe ab. Dann wird der nächste Termin berechnet.</p>':'')+g[k].map(t=>card(t,k)).join('');});
+  if(!act.length)h='<p class="empty">'+(empty||'Noch keine Aufgaben. Tippe auf das Plus, um Aufgaben aus der Vorschlagsliste zu wählen oder eine eigene anzulegen.')+'</p>';
+  $('#'+id).innerHTML=h;
+}
+const BKFARBE={'Im Haus':'var(--accent)','Keller und Nebengebäude':'var(--c-keller)','Rund ums Haus':'var(--c-rund)','Garten':'var(--garten)'};
+function histBereich(e){
+  if(e.bereich)return e.bereich;
+  const t=state.tasks.find(x=>x.id===e.taskId);
+  return t&&t.bereich?t.bereich:'Im Haus';
+}
+function renderHistory(){
+  const all=state.history.map((e,i)=>Object.assign({i},e)).sort((a,b)=>b.datum.localeCompare(a.datum)||b.i-a.i);
+  if(!all.length){$('#historie').innerHTML='<p class="empty">Noch nichts erledigt. Erledigte Aufgaben erscheinen hier.</p>';return;}
+  const MON=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const hm=state.settings.hist||'rolling',now=new Date();
+  const sd=hm==='this'?new Date(now.getFullYear(),0,1):hm==='last'?new Date(now.getFullYear()-1,0,1):new Date(now.getFullYear(),now.getMonth()-11,1);
+  const startIso=iso(sd),endIso=iso(new Date(sd.getFullYear(),sd.getMonth()+12,1));
+  const hlabel=hm==='this'?'Dieses Jahr ('+now.getFullYear()+')':hm==='last'?'Letztes Jahr ('+(now.getFullYear()-1)+')':'Letzte 12 Monate';
+  const hchipsH='<div class="chips">'+[['rolling','Letzte 12 Monate'],['this','Dieses Jahr'],['last','Letztes Jahr']].map(m=>'<button class="chip'+(hm===m[0]?' on':'')+'" data-hmode="'+m[0]+'">'+m[1]+'</button>').join('')+'</div>';
+  const last12=all.filter(e=>e.datum>=startIso&&e.datum<endIso),ty=all.filter(e=>e.datum.startsWith(year()));
+  let h=hchipsH+'<h2>'+hlabel+'</h2><div class="big">'+last12.length+'</div><p class="hint">Aufgaben erledigt</p>';
+  if(last12.length){
+    const months=[],tb={};
+    for(let i=0;i<12;i++){const d=new Date(sd.getFullYear(),sd.getMonth()+i,1);months.push({k:d.getFullYear()+'-'+pad(d.getMonth()+1),l:MON[d.getMonth()],by:{},tot:0});}
+    last12.forEach(e=>{const m=months.find(x=>e.datum.startsWith(x.k)),b=histBereich(e);tb[b]=(tb[b]||0)+1;if(m){m.by[b]=(m.by[b]||0)+1;m.tot++;}});
+    const mx=Math.max.apply(null,months.map(m=>m.tot))||1,order=Object.keys(BEREICHE).filter(b=>tb[b]),total=last12.length;
+    h+='<h2>Erledigt pro Monat</h2><div class="hbars">'+months.map(m=>{
+      const segs=order.filter(b=>m.by[b]).map(b=>'<div class="hseg" title="'+esc(b)+': '+m.by[b]+'" style="flex:'+m.by[b]+' 1 0;background:'+BKFARBE[b]+'"></div>').join('');
+      return '<div class="hcol"><div class="hnum">'+(m.tot||'')+'</div><div class="hstack" style="height:'+Math.round(m.tot/mx*110)+'px">'+segs+'</div><div class="hlab">'+m.l+'</div></div>';
+    }).join('')+'</div>';
+    let cum=0;
+    const arcs=order.map(b=>{const pc=tb[b]/total*100,c='<circle r="15.9155" cx="21" cy="21" fill="none" stroke-width="7" style="stroke:'+BKFARBE[b]+'" stroke-dasharray="'+pc+' '+(100-pc)+'" stroke-dashoffset="'+(25-cum)+'"/>';cum+=pc;return c;}).join('');
+    h+='<h2>Anteile nach Bereich</h2><div class="hdonut"><svg viewBox="0 0 42 42" aria-hidden="true">'+arcs+'<text x="21" y="23.5" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor">'+total+'</text></svg><div class="hleg">'+order.map(b=>'<div><i style="background:'+BKFARBE[b]+'"></i>'+esc(b)+' <b>'+tb[b]+'</b> ('+Math.round(tb[b]/total*100)+' %)</div>').join('')+'</div></div>';
+    const by={};last12.forEach(e=>{by[e.name]=(by[e.name]||0)+1;});
+    const names=Object.keys(by).sort((a,b)=>by[b]-by[a]||a.localeCompare(b,'de')).slice(0,8);
+    h+='<h2>Am häufigsten erledigt</h2>'+names.map(n=>'<div class="rk"><span class="rkn">'+esc(n)+'</span><span class="rkb"><i style="width:'+(by[n]/by[names[0]]*100)+'%"></i></span><b>'+by[n]+'x</b></div>').join('');
+  }else h+='<p class="hint">Im gewählten Zeitraum wurde nichts erledigt.</p>';
+  if(last12.length)h+='<h2>Verlauf</h2>';
+  let last='';
+  last12.slice(0,200).forEach(e=>{
+    if(e.datum!==last){h+='<div class="hint">'+fmt(e.datum)+'</div>';last=e.datum;}
+    h+='<div class="entry"><span>'+esc(iconFor(e))+'</span><span>'+esc(e.name)+(e.extra?' <small style="color:var(--muted)">mit '+esc(e.extra)+'</small>':'')+'</span><button class="mini mute" style="margin-left:auto" data-hedit="'+e.id+'">ändern</button></div>';
+  });
+  $('#historie').innerHTML=h;
+}
+const chips=(items,cur,attr)=>items.map(u=>'<button class="chip'+(u===cur?' on':'')+'" data-'+attr+'="'+esc(u)+'">'+esc(u)+'</button>').join('');
+function render(){
+  const gOn=!!state.settings.garten,act=state.tasks.filter(t=>!t.erledigt);
+  const haus=act.filter(t=>t.bereich!=='Garten');
+  const bs=Object.keys(BEREICHE).filter(b=>b!=='Garten'&&haus.some(t=>t.bereich===b));
+  if(hB!=='Alle'&&!bs.includes(hB))hB='Alle';
+  const rooms=[...new Set(haus.filter(t=>hB==='Alle'||t.bereich===hB).map(t=>t.raum).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de'));
+  if(hR!=='Alle'&&!rooms.includes(hR))hR='Alle';
+  $('#hchips').innerHTML=bs.length>1?'<span class="cl">Bereich</span>'+chips(['Alle'].concat(bs),hB,'hb'):'';
+  $('#hrooms').innerHTML=rooms.length?'<span class="cl">Raum</span>'+chips(['Alle'].concat(rooms),hR,'hr'):'';
+  renderTasks('hlist',t=>t.bereich!=='Garten'&&(hB==='Alle'||t.bereich===hB)&&(hR==='Alle'||t.raum===hR),(hB!=='Alle'||hR!=='Alle')?'Keine Aufgaben für diesen Filter.':'');
+  if(!haus.length)$('#hlist').insertAdjacentHTML('beforeend',planBox('haus'));
+  if(!gOn)$('#hlist').insertAdjacentHTML('beforeend','<p class="hint">Gehört ein Garten dazu? <button class="link" data-goto="daten">Gartenbereich aktivieren</button></p>');
+  if(gOn){
+    const gt=act.filter(t=>t.bereich==='Garten');
+    const cats=[...new Set(gt.map(t=>t.unter).filter(Boolean))].sort((a,b)=>{const i=UNTER.indexOf(a),j=UNTER.indexOf(b);return (i<0?99:i)-(j<0?99:j)||a.localeCompare(b,'de');});
+    if(gFilter!=='Alle'&&!cats.includes(gFilter))gFilter='Alle';
+    $('#gchips').innerHTML=cats.length?'<span class="cl">Kategorie</span>'+chips(['Alle'].concat(cats),gFilter,'gc'):'';
+    renderTasks('glist',t=>t.bereich==='Garten'&&(gFilter==='Alle'||t.unter===gFilter),gFilter!=='Alle'?'Keine Aufgaben in dieser Kategorie.':'');
+    if(!gt.length)$('#glist').insertAdjacentHTML('beforeend',planBox('garten'));
+    $('#glist').insertAdjacentHTML('beforeend','<p class="hint">Den Gartenbereich kannst du unter „Daten“ ausschalten. <button class="link" data-goto="daten">Zu den Einstellungen</button></p>');
+  }
+  try{renderHistory();}catch(e){}
+  try{renderGantt();}catch(e){}
+}
+
+function toast(msg,undo){
+  $('#toast-text').textContent=msg;$('#toast-undo').style.display=undo?'':'none';
+  $('#toast').classList.add('on');clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>$('#toast').classList.remove('on'),6000);
+}
+function shiftWin(t){
+  const n=+t.n,mon=t.einheit==='Monate';
+  const isEom=s=>{const d=parse(s);return d.getDate()===new Date(d.getFullYear(),d.getMonth()+1,0).getDate();};
+  const step=(s,edge)=>{
+    if(!mon)return addIv(s,n,t.einheit);
+    const d=parse(s);
+    if(edge==='end'&&isEom(s))return iso(new Date(d.getFullYear(),d.getMonth()+n+1,0));
+    if(edge==='start'&&d.getDate()===1)return iso(new Date(d.getFullYear(),d.getMonth()+n,1));
+    return addIv(s,n,t.einheit);
+  };
+  do{t.faellig=step(t.faellig,'start');t.bis=step(t.bis,'end');}while(t.faellig<=today());
+}
+function finishTask(t,d){
+  if(t.typ==='einmalig'){t.erledigt=true;return;}
+  if(t.typ!=='wiederkehrend')return;
+  if(t.orig){
+    t.faellig=t.orig.faellig;t.bis=t.orig.bis;delete t.orig;
+    if(t.bis&&t.faellig)shiftWin(t);else{do{t.faellig=addIv(t.faellig,t.n,t.einheit);}while(t.faellig<=today());}
+  }
+  else if(t.bis&&t.faellig)shiftWin(t);
+  else if(t.modus==='raster'&&t.faellig){do{t.faellig=addIv(t.faellig,t.n,t.einheit);}while(t.faellig<=today());}
+  else t.faellig=addIv(d,t.n,t.einheit);
+}
+function earlyDays(t){
+  if(t.typ!=='wiederkehrend'||!t.faellig||!t.n)return 0;
+  const per=t.n*(t.einheit==='Tage'?1:t.einheit==='Wochen'?7:30);
+  if(per<28)return 0;
+  const d=diff(today(),t.faellig);
+  return d>Math.max(7,Math.round(per*0.2))?d:0;
+}
+function recordDone(t,d){
+  undoSnap=JSON.stringify(state);
+  const ex=dueExtras(t),prev={faellig:t.faellig||null,bis:t.bis||null,orig:t.orig||null,erledigt:!!t.erledigt};
+  state.history.push({id:uid(),taskId:t.id,name:t.name,icon:t.icon,bereich:t.bereich,datum:d,extra:ex.join(', '),prev:prev});
+  finishTask(t,d);
+  save();render();
+  toast('„'+t.name+'“ erledigt'+(d!==today()?' am '+fmt(d):'')+(ex.length?' (mit '+ex.join(', ')+')':''),true);
+}
+function markDone(id){
+  const t=state.tasks.find(x=>x.id===id);if(!t)return;
+  const e=earlyDays(t);
+  if(e>0&&!confirm('„'+t.name+'“ ist erst am '+fmt(t.faellig)+' fällig (in '+e+' Tagen). Wirklich schon jetzt als erledigt eintragen?'))return;
+  recordDone(t,today());
+}
+function isLatest(e){const same=state.history.filter(h=>h.taskId===e.taskId);return same.length>0&&same[same.length-1].id===e.id;}
+function restoreTask(e){
+  const t=state.tasks.find(x=>x.id===e.taskId);
+  if(!t||!e.prev)return null;
+  t.faellig=e.prev.faellig;t.bis=e.prev.bis;t.erledigt=!!e.prev.erledigt;
+  if(e.prev.orig)t.orig=e.prev.orig;else delete t.orig;
+  return t;
+}
+let heId=null;
+function openHE(id){
+  const e=state.history.find(x=>x.id===id);if(!e)return;
+  heId=id;
+  $('#he-title').textContent=e.name;$('#he-date').value=e.datum;$('#he-date').max=today();
+  const can=e.prev&&isLatest(e)&&state.tasks.some(x=>x.id===e.taskId);
+  $('#he-hint').textContent=can?'Beim Löschen wird die Aufgabe wieder auf ihren Stand vor diesem Erledigen gesetzt. Bei einer Datumsänderung wird der nächste Termin neu berechnet.':'Beim Löschen wird nur dieser Eintrag entfernt.';
+  $('#he').showModal();
+}
+$('#toast-undo').onclick=()=>{if(undoSnap){state=JSON.parse(undoSnap);undoSnap=null;save();render();$('#toast').classList.remove('on');}};
+function onTaskClick(e){
+  const d=e.target.closest('[data-done]');
+  if(d){markDone(d.dataset.done);return;}
+  const m=e.target.closest('[data-move]');
+  if(m){openMove(m.dataset.move);return;}
+  const c=e.target.closest('[data-edit]');
+  if(c)openForm(c.dataset.edit);
+}
+$('#aufgaben').addEventListener('click',onTaskClick);
+$('#glist').addEventListener('click',onTaskClick);
+$('#jahr').addEventListener('click',e=>{if(e.target.closest('[data-gfreq]')){ganttFreq=!ganttFreq;renderGantt();return;}onTaskClick(e);});
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode]');if(!c)return;
+  if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
+  if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
+  if(c.dataset.plan!==undefined){makePlan(c.dataset.plan);return;}
+  if(c.dataset.hb!==undefined)hB=c.dataset.hb;
+  else if(c.dataset.hr!==undefined)hR=c.dataset.hr;
+  else if(c.dataset.gc!==undefined)gFilter=c.dataset.gc;
+  else{showTab(c.dataset.goto);return;}
+  render();
+});
+
+let curTipp=null,mvId=null,mvLen=0,mvPA='',mvPB='',pA='',pB='',catSel=null;
+const RAUMLISTE=['Keller','Küche','Bad','Schlafzimmer','Wohnzimmer','Garage','Werkstatt','Schuppen','Flur','Hauseingang','Einfahrt'];
+const RAUMKEY=[['backofen','Küche'],['mikrowelle','Küche'],['airfryer','Küche'],['abzug','Küche'],['kaffeemaschine','Küche'],['milchsystem','Küche'],['wasserkocher','Küche'],['spülmaschine','Küche'],['couch','Wohnzimmer'],['bettwäsche','Schlafzimmer']];
+function guessRaum(name){
+  const n=String(name||'').toLowerCase();
+  const own=[...new Set(state.tasks.map(t=>t.raum).filter(Boolean))].concat(RAUMLISTE);
+  for(const r of own)if(n.includes(r.toLowerCase()))return r;
+  for(const k of RAUMKEY)if(n.includes(k[0]))return k[1];
+  return '';
+}
+function keepWin(a,b,na){
+  const A=parse(a),B=parse(b),N=parse(na);
+  const eom=B.getDate()===new Date(B.getFullYear(),B.getMonth()+1,0).getDate();
+  if(A.getDate()===1&&eom){const span=(B.getFullYear()-A.getFullYear())*12+B.getMonth()-A.getMonth();return iso(new Date(N.getFullYear(),N.getMonth()+span+1,0));}
+  return addIv(na,diff(a,b),'Tage');
+}
+function rememberWin(){pA=$('#f-date').value;pB=$('#f-bis').value;}
+function dueExtras(t){
+  if(!t.extras||!t.extras.length)return [];
+  const next=state.history.filter(h=>h.taskId===t.id).length+1;
+  return t.extras.filter(x=>x.alle>=2&&next%x.alle===0).map(x=>x.text);
+}
+function addExRow(t,n){
+  const d=document.createElement('div');d.className='exrow';
+  d.innerHTML='<input class="ex-t" maxlength="60" placeholder="z. B. Entkalken"><span>jedes</span><input class="ex-n" type="number" min="2" max="99"><span>. Mal</span><button type="button" class="mini mute ex-x" aria-label="Zusatz entfernen">✕</button>';
+  d.querySelector('.ex-t').value=t||'';d.querySelector('.ex-n').value=n||4;
+  $('#f-extras').appendChild(d);
+}
+function readEx(){return [...document.querySelectorAll('#f-extras .exrow')].map(r=>({text:r.querySelector('.ex-t').value.trim(),alle:Math.max(2,parseInt(r.querySelector('.ex-n').value,10)||2)})).filter(x=>x.text);}
+function protoTask(i){
+  const k=KATALOG[i],o=k[2]===O,win=k[5]?windowFor(k[5]):[null,null];
+  return {name:k[0],bereich:BK[k[1]],unter:k[7]||null,typ:k[2],n:o?null:k[3],einheit:o?null:k[4],faellig:o?null:win[0],bis:o?null:win[1],modus:o?null:(RASTER.includes(k[0])?'raster':'erledigung'),tipp:k[6],extras:(k[8]||[]).map(x=>({text:x[0],alle:x[1]}))};
+}
+function syncForm(){
+  const typ=$('#f-typ').value,tm=$('#f-tm').value,ohne=typ==='ohne';
+  $('#f-iv').style.display=typ==='wiederkehrend'?'':'none';
+  $('#f-exwrap').style.display=typ==='wiederkehrend'?'':'none';
+  const mod=typ==='wiederkehrend'&&tm!=='zeitraum';
+  $('#f-modwrap').style.display=$('#f-ivhint').style.display=mod?'':'none';
+  $('#f-ivhint').textContent=$('#f-modus').value==='raster'?'Der nächste Termin richtet sich nach dem bisherigen Termin, auch wenn du früher oder später erledigst (z. B. Wäsche waschen).':'Erledigst du früher oder später, verschiebt sich der nächste Termin entsprechend (z. B. Couch absaugen).';
+  $('#f-tmwrap').style.display=$('#f-tmhint').style.display=ohne?'none':'';
+  $('#f-tmdates').style.display=(ohne||tm==='offen')?'none':'';
+  $('#f-biswrap').style.display=tm==='zeitraum'?'':'none';
+  $('#f-datelbl').textContent=tm==='zeitraum'?'Von':'Datum';
+  $('#f-tmhint').textContent=tm==='offen'?'Die Aufgabe steht unter „Noch nicht eingeplant“. Sobald du sie erledigst, wird der nächste Termin berechnet.':tm==='zeitraum'?'Die Aufgabe gilt erst nach dem Ende des Zeitraums als überfällig.':'';
+}
+function bhint(){$('#f-bhint').textContent='Zum Beispiel: '+(BEREICHE[$('#f-bereich').value]||'');$('#f-unterwrap').style.display=$('#f-bereich').value==='Garten'?'':'none';$('#f-raum').parentElement.style.display=$('#f-bereich').value==='Garten'?'none':'';}
+function openForm(id,preset,proto){
+  editId=id||null;
+  const t=id?state.tasks.find(x=>x.id===id):null;
+  const src=t||(proto!=null?protoTask(proto):null);
+  curTipp=src&&src.tipp?src.tipp:null;
+  $('#ftitle').textContent=t?'Aufgabe bearbeiten':'Einstellungen der Aufgabe';
+  $('#f-name').value=src?src.name:'';
+  const allowed=Object.keys(BEREICHE).filter(b=>b!=='Garten'||state.settings.garten||(src&&src.bereich==='Garten')),pre=src?src.bereich:preset;
+  $('#f-bereich').innerHTML=allowed.map(b=>'<option'+(pre===b?' selected':'')+'>'+b+'</option>').join('');
+  $('#f-unter').value=src?(src.unter||''):(preset==='Garten'&&gFilter!=='Alle'?gFilter:'');
+  $('#gkat').innerHTML=[...new Set(UNTER.concat(state.tasks.map(x=>x.unter).filter(Boolean)))].map(r=>'<option value="'+esc(r)+'">').join('');
+  bhint();
+  $('#f-tipp').textContent=curTipp?'Tipp: '+curTipp:'';
+  $('#f-raum').value=t?(t.raum||''):(src&&src.bereich!=='Garten'?guessRaum(src.name):'');
+  const raeume=[...new Set(state.tasks.map(x=>x.raum).filter(Boolean))];
+  $('#raeume').innerHTML=raeume.map(r=>'<option value="'+esc(r)+'">').join('');
+  $('#f-typ').value=src?src.typ:'wiederkehrend';
+  $('#f-n').value=src&&src.n?src.n:1;$('#f-u').value=src&&src.einheit?src.einheit:'Wochen';
+  $('#f-modus').value=src&&src.modus?src.modus:'erledigung';
+  $('#f-extras').innerHTML='';((src&&src.extras)||[]).forEach(x=>addExRow(x.text,x.alle));
+  $('#f-tm').value=src&&src.bis&&src.faellig?'zeitraum':src&&src.faellig?'datum':'offen';
+  $('#f-date').value=src&&src.faellig?src.faellig:'';
+  $('#f-bis').value=src&&src.bis?src.bis:'';
+  $('#f-note').value=t?t.notiz||'':'';
+  $('#f-del').style.display=t?'':'none';
+  $('#f-donewrap').style.display=t?'':'none';$('#f-donedate').value=today();$('#f-donedate').max=today();
+  $('#f-cancel').textContent=t?'Abbrechen':'Zurück';
+  syncForm();rememberWin();$('#dlg').showModal();
+}
+$('#f-typ').onchange=syncForm;
+$('#f-modus').onchange=syncForm;
+$('#f-exadd').onclick=()=>addExRow();
+$('#f-extras').addEventListener('click',e=>{const x=e.target.closest('.ex-x');if(x)x.parentElement.remove();});
+$('#f-name').onchange=()=>{if(!$('#f-raum').value&&$('#f-bereich').value!=='Garten')$('#f-raum').value=guessRaum($('#f-name').value);};
+$('#f-date').onchange=()=>{
+  const v=$('#f-date').value;
+  if($('#f-tm').value==='zeitraum'&&v&&pA&&pB)$('#f-bis').value=keepWin(pA,pB,v);
+  rememberWin();
+};
+$('#f-bis').onchange=rememberWin;
+$('#f-bereich').onchange=bhint;
+$('#f-tm').onchange=()=>{
+  const tm=$('#f-tm').value;
+  if(tm!=='offen'&&!$('#f-date').value)$('#f-date').value=today();
+  if(tm==='zeitraum'&&!$('#f-bis').value)$('#f-bis').value=$('#f-date').value;
+  syncForm();rememberWin();
+};
+function buildCat(){
+  const have=new Set(state.tasks.filter(t=>!t.erledigt).map(t=>t.name));
+  const hid=state.settings.hidden||[];
+  const q=($('#cat-q').value||'').trim().toLowerCase();
+  let h='',nh=0,vis=new Set();
+  Object.keys(BEREICHE).filter(b=>tab==='garten'?b==='Garten':b!=='Garten').forEach(b=>{
+    const all=KATALOG.map((k,i)=>({k,i})).filter(x=>BK[x.k[1]]===b);
+    nh+=all.filter(x=>hid.includes(x.k[0])).length;
+    const items=all.filter(x=>!hid.includes(x.k[0])&&(!q||x.k[0].toLowerCase().includes(q)));
+    items.sort((x,y)=>(b==='Garten'?UNTER.indexOf(x.k[7])-UNTER.indexOf(y.k[7]):0)||x.k[0].localeCompare(y.k[0],'de'));
+    if(!items.length)return;
+    let su='';
+    h+='<h2>'+b+'</h2>';
+    items.forEach(x=>{const k=x.k;vis.add(String(x.i));
+      if(b==='Garten'&&k[7]!==su){su=k[7];h+='<div class="hint"><b>'+esc(su)+'</b></div>';}
+      h+='<div class="cr"><label><input type="radio" name="kat" value="'+x.i+'"'+(catSel===String(x.i)?' checked':'')+'><span>'+esc(k[0])+'</span>'+(have.has(k[0])?'<small style="margin-left:auto">angelegt</small>':'')+'</label><button type="button" class="mini mute" data-hide="'+x.i+'" aria-label="Aus der Liste entfernen">✕</button></div>';});
+  });
+  if(!vis.size)h+='<p class="empty">Nichts gefunden. Mit „Eigene Aufgabe“ legst du sie selbst an.</p>';
+  if(nh)h+='<p class="hint">'+nh+' ausgeblendet. <button type="button" class="link" data-unhide="1">Alle wieder anzeigen</button></p>';
+  if(catSel!==null&&!vis.has(catSel))catSel=null;
+  $('#cat-list').innerHTML=h;$('#cat-add').disabled=catSel===null;
+}
+function openCat(){$('#cat-q').value='';catSel=null;buildCat();$('#cat').showModal();}
+$('#fab').onclick=openCat;
+$('#cat-own').onclick=()=>{$('#cat').close();openForm(null,tab==='garten'?'Garten':null);};
+$('#cat-list').addEventListener('change',e=>{catSel=e.target.value;$('#cat-add').disabled=false;});
+$('#cat-q').oninput=buildCat;
+$('#cat-list').addEventListener('click',e=>{
+  const h=e.target.closest('[data-hide]'),u=e.target.closest('[data-unhide]');
+  if(h){state.settings.hidden=(state.settings.hidden||[]).concat(KATALOG[+h.dataset.hide][0]);save();buildCat();}
+  else if(u){state.settings.hidden=[];save();buildCat();}
+});
+$('#cat-close').onclick=()=>$('#cat').close();
+$('#cat-add').onclick=()=>{
+  const r=document.querySelector('#cat-list input:checked');if(!r)return;
+  $('#cat').close();openForm(null,tab==='garten'?'Garten':null,+r.value);
+};
+$('#f-cancel').onclick=()=>{$('#dlg').close();if(!editId)openCat();};
+$('#f-del').onclick=()=>{
+  if(editId&&confirm('Diese Aufgabe löschen? Die Historie bleibt erhalten.')){
+    state.tasks=state.tasks.filter(x=>x.id!==editId);save();render();$('#dlg').close();
+  }
+};
+$('#frm').onsubmit=e=>{
+  e.preventDefault();
+  const typ=$('#f-typ').value,tm=$('#f-tm').value;
+  const data={
+    name:$('#f-name').value.trim(),bereich:$('#f-bereich').value,unter:$('#f-bereich').value==='Garten'?($('#f-unter').value.trim()||null):null,raum:$('#f-raum').value.trim(),
+    notiz:$('#f-note').value.trim(),typ:typ,
+    n:typ==='wiederkehrend'?Math.max(1,parseInt($('#f-n').value,10)||1):null,
+    einheit:typ==='wiederkehrend'?$('#f-u').value:null,
+    modus:typ==='wiederkehrend'?$('#f-modus').value:null,
+    extras:typ==='wiederkehrend'?readEx():[],
+    faellig:(typ==='ohne'||tm==='offen')?null:($('#f-date').value||null),
+    bis:(typ==='ohne'||tm!=='zeitraum')?null:($('#f-bis').value||null)
+  };
+  if(!data.name)return;
+  if(!data.faellig||(data.bis&&data.bis<data.faellig))data.bis=null;
+  if(editId){const tk=state.tasks.find(x=>x.id===editId);Object.assign(tk,data);delete tk.orig;}
+  else state.tasks.push(Object.assign({id:uid(),erledigt:false,tipp:curTipp},data));
+  save();render();$('#dlg').close();
+};
+function openMove(id){
+  const t=state.tasks.find(x=>x.id===id);if(!t||!t.faellig)return;
+  mvId=id;
+  const win=!!(t.bis&&t.bis>=t.faellig),rep=t.typ==='wiederkehrend'&&(t.modus==='raster'||win);
+  mvLen=win?diff(t.faellig,t.bis):0;
+  $('#mv-title').textContent='Verschieben: '+t.name;
+  $('#mv-albl').textContent=win?'Neuer Beginn':'Neuer Termin';
+  $('#mv-a').value=t.faellig;$('#mv-b').value=win?t.bis:'';mvPA=t.faellig;mvPB=win?t.bis:'';
+  $('#mv-bwrap').style.display=win?'':'none';
+  $('#mv-modes').style.display=rep?'':'none';
+  document.querySelector('[name=mvm][value=einmal]').checked=true;
+  $('#mv-hint').textContent=rep?'Bei „Nur dieses Mal“ richtet sich der Termin danach weiter nach dem bisherigen Rhythmus.':'';
+  $('#mv').showModal();
+}
+$('#mv-a').onchange=()=>{
+  const v=$('#mv-a').value;
+  if($('#mv-bwrap').style.display!=='none'&&v&&mvPA&&mvPB)$('#mv-b').value=keepWin(mvPA,mvPB,v);
+  mvPA=v;mvPB=$('#mv-b').value;
+};
+$('#mv-b').onchange=()=>{mvPB=$('#mv-b').value;};
+$('#mv-cancel').onclick=()=>$('#mv').close();
+$('#mvf').onsubmit=e=>{
+  e.preventDefault();
+  const t=state.tasks.find(x=>x.id===mvId),a=$('#mv-a').value;
+  if(!t||!a)return;
+  let b=t.bis?($('#mv-b').value||a):null;if(b&&b<a)b=a;
+  const anch=t.typ==='wiederkehrend'&&(t.modus==='raster'||(t.bis&&t.faellig&&t.bis>=t.faellig));
+  const once=anch&&document.querySelector('[name=mvm]:checked').value==='einmal';
+  undoSnap=JSON.stringify(state);
+  if(once){if(!t.orig)t.orig={faellig:t.faellig,bis:t.bis||null};}else delete t.orig;
+  t.faellig=a;t.bis=b;
+  save();render();$('#mv').close();toast('„'+t.name+'“ verschoben',true);
+};
+
+function planBox(scope){
+  return '<div class="plan"><button class="plan-btn" data-plan="'+scope+'">Beispielplan erstellen</button><p class="hint">Legt ein Grundpaket mit den typischen Aufgaben für '+(scope==='garten'?'den Garten':'das Haus')+' auf einmal an, gleichmäßig auf die nächsten Wochen und Monate verteilt. Alle weiteren Vorschläge findest du danach über das Plus. Aufgaben mit empfohlenem Zeitraum (z. B. Fenster putzen im April) bekommen diesen. Danach kannst du alles einzeln ändern oder löschen.</p></div>';
+}
+function makePlan(scope){
+  const g=scope==='garten',hid=state.settings.hidden||[];
+  let idx=KATALOG.map((k,i)=>i).filter(i=>(BK[KATALOG[i][1]]==='Garten')===g&&GRUND.includes(KATALOG[i][0])&&!hid.includes(KATALOG[i][0]));
+  if(!idx.length)return;
+  if(!confirm('Grundpaket anlegen? Es werden '+idx.length+' typische Aufgaben angelegt, gleichmäßig verteilt. Du kannst sie danach einzeln ändern oder löschen, alle weiteren Vorschläge bleiben in der Vorschlagsliste. Ausgeblendete Vorschläge werden nicht übernommen.'))return;
+  const FOLLOW={'Staub wischen':'Saugen','Wischen':'Saugen','Couch absaugen':'Saugen','Bettwäsche wechseln':'Wäsche waschen','Wasserkocher entkalken':'Küche putzen'};
+  const pri=['Staub wischen','Saugen','Couch absaugen','Wischen','Bettwäsche wechseln','Wäsche waschen','Wasserkocher entkalken','Küche putzen'];
+  const nm=i=>KATALOG[i][0],byName={};idx.forEach(i=>{byName[nm(i)]=i;});
+  const head=pri.map(n=>byName[n]).filter(i=>i!==undefined);
+  idx=head.concat(idx.filter(i=>!head.includes(i)));
+  const T=today(),days=k=>k[3]*(k[4]==='Tage'?1:k[4]==='Wochen'?7:30),groups={},off={},foll=[];
+  idx.forEach(i=>{const k=KATALOG[i];if(k[2]===O||k[5])return;
+    const l=FOLLOW[k[0]],li=l===undefined?undefined:byName[l];
+    if(li!==undefined&&KATALOG[li][2]!==O&&!KATALOG[li][5]){foll.push(i);return;}
+    (groups[days(k)]=groups[days(k)]||[]).push(i);});
+  Object.keys(groups).forEach(L=>{
+    const a=groups[L].sort((x,y)=>KATALOG[x][0].localeCompare(KATALOG[y][0],'de'));
+    a.forEach((i,j)=>{off[i]=1+Math.floor(j*(+L)/a.length);});
+  });
+  foll.forEach(i=>{off[i]=off[byName[FOLLOW[nm(i)]]];});
+  const WE=['Backofen reinigen','Küchenabzug saubermachen','Waschmaschine reinigen','Staubsauger reinigen','Hauseingang reinigen','Küchenvorräte überprüfen und aussortieren'],weDay={};
+  idx.filter(i=>WE.includes(nm(i))&&off[i]!==undefined).forEach((i,j)=>{weDay[i]=nm(i)==='Küchenvorräte überprüfen und aussortieren'?0:(j%2?0:6);});
+  const snap=(x,wd)=>addIv(x,(wd-parse(x).getDay()+7)%7,'Tage'),usedWE=new Set();
+  undoSnap=JSON.stringify(state);
+  idx.forEach(i=>{
+    const t=Object.assign({id:uid(),erledigt:false,raum:'',notiz:''},protoTask(i));
+    if(t.bereich!=='Garten')t.raum=guessRaum(t.name);
+    if(off[i]!==undefined){let f=addIv(T,off[i],'Tage');if(weDay[i]!==undefined){f=snap(f,weDay[i]);while(usedWE.has(f))f=addIv(f,7,'Tage');usedWE.add(f);}t.faellig=f;t.bis=null;}
+    state.tasks.push(t);
+  });
+  save();render();toast(idx.length+' Aufgaben angelegt',true);
+}
+let ganttFreq=false;
+function stepD(s,edge,n,u){
+  if(u!=='Monate')return addIv(s,n,u);
+  const d=parse(s),eom=new Date(d.getFullYear(),d.getMonth()+1,0).getDate()===d.getDate();
+  if(edge==='end'&&eom)return iso(new Date(d.getFullYear(),d.getMonth()+n+1,0));
+  if(edge==='start'&&d.getDate()===1)return iso(new Date(d.getFullYear(),d.getMonth()+n,1));
+  return addIv(s,n,u);
+}
+function occurrences(t,start,endEx){
+  const out=[],n=+t.n||0;
+  let a=t.faellig,b=(t.bis&&t.bis>=t.faellig)?t.bis:null,first=true,g=0;
+  while(a<endEx&&g++<80){
+    if((first&&start<=today())||(b||a)>=start)out.push({a:a,b:b,proj:!first,late:first&&(b||a)<today()});
+    first=false;
+    if(t.typ!=='wiederkehrend'||!n)break;
+    a=stepD(a,'start',n,t.einheit);b=b?stepD(b,'end',n,t.einheit):null;
+  }
+  return out;
+}
+function renderGantt(){
+  const el=$('#jahr');
+  const T=today(),td=parse(T),gm=state.settings.gantt||'rolling';
+  const sd=gm==='this'?new Date(td.getFullYear(),0,1):gm==='next'?new Date(td.getFullYear()+1,0,1):new Date(td.getFullYear(),td.getMonth(),1);
+  const start=iso(sd),endEx=iso(new Date(sd.getFullYear(),sd.getMonth()+12,1)),lastIncl=iso(new Date(sd.getFullYear(),sd.getMonth()+12,0));
+  const dimOf=d=>new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  const mIdx=x=>{const d=parse(x);return (d.getFullYear()-sd.getFullYear())*12+d.getMonth()-sd.getMonth();};
+  const pos=x=>{const d=parse(x);return (mIdx(x)+(d.getDate()-1)/dimOf(d))/12;};
+  const posE=x=>{const d=parse(x);return (mIdx(x)+d.getDate()/dimOf(d))/12;};
+  const MON=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const MONL=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const gOn=!!state.settings.garten;
+  const act=state.tasks.filter(t=>!t.erledigt&&(gOn||t.bereich!=='Garten'));
+  const sched=act.filter(t=>t.typ!=='ohne'&&t.faellig);
+  const nots=act.length-sched.length,freq=[],rows=[],cnt=new Array(12).fill(0);
+  sched.forEach(t=>{
+    const per=t.typ==='wiederkehrend'&&t.n?t.n*(t.einheit==='Tage'?1:t.einheit==='Wochen'?7:30):0;
+    if(per&&per<=14){freq.push(t);return;}
+    const occ=occurrences(t,start,endEx);
+    if(occ.length)rows.push({t:t,occ:occ});
+  });
+  rows.sort((x,y)=>((x.t.bereich==='Garten')-(y.t.bereich==='Garten'))||x.occ[0].a.localeCompare(y.occ[0].a));
+  const tl=(mIdx(T)>=0&&mIdx(T)<12)?'<div class="gtoday" style="left:'+(pos(T)*100)+'%"></div>':'';
+  const rowHtml=r=>{
+    const t=r.t,months=new Set();let bars='';
+    r.occ.forEach(o=>{
+      let a=o.a<start?start:o.a,e=o.b||o.a;
+      if(e<start)e=start;if(e>lastIncl)e=lastIncl;if(a>lastIncl)return;if(a>e)a=e;
+      for(let i=mIdx(a);i<=mIdx(e);i++)months.add(i);
+      const l=pos(a)*100,w=Math.max(0,(posE(e)-pos(a))*100);
+      const cls='gbar'+(t.bereich==='Garten'?' garten':'')+(o.late?' late':'')+(o.proj?' proj':'');
+      const ttl=esc(t.name)+': '+fmt(o.a).slice(0,6)+(o.b?' bis '+fmt(o.b).slice(0,6):'');
+      bars+=o.proj?'<span class="'+cls+'" style="left:'+l+'%;width:'+w+'%" title="'+ttl+'"></span>':'<button class="'+cls+'" style="left:'+l+'%;width:'+w+'%" data-move="'+t.id+'" title="Verschieben, '+ttl+'"></button>';
+    });
+    months.forEach(i=>{if(i>=0&&i<12)cnt[i]++;});
+    return '<div class="grow"><div class="glabel" title="'+esc(t.name)+'">'+esc(iconFor(t))+' '+esc(t.name)+'</div><div class="gtrack">'+bars+tl+'</div></div>';
+  };
+  let body='';
+  if(freq.length){
+    body+='<div class="grow"><button class="glabel" data-gfreq="1">Regelmäßig ('+freq.length+') '+(ganttFreq?'▴':'▾')+'</button><div class="gtrack"><div class="gband"></div>'+tl+'</div></div>';
+    if(ganttFreq)body+='<div class="gfl">'+freq.map(t=>esc(t.name)).join(', ')+'</div>';
+  }
+  const hausRows=rows.filter(r=>r.t.bereich!=='Garten'),gartRows=rows.filter(r=>r.t.bereich==='Garten');
+  const sec=n=>'<div class="grow gsec"><div class="glabel">'+n+'</div><div class="gtrack" style="background:none"></div></div>';
+  const hh=hausRows.map(rowHtml).join(''),gh=gartRows.map(rowHtml).join('');
+  if(gOn&&gartRows.length&&hausRows.length)body+=sec('Haus')+hh+sec('Garten')+gh;else body+=hh+gh;
+  let head='<div class="grow ghead"><div class="glabel"></div><div class="gtrack">';
+  for(let i=0;i<12;i++){const d=new Date(sd.getFullYear(),sd.getMonth()+i,1);head+='<div class="gm">'+MON[d.getMonth()]+'<br>'+((i===0||d.getMonth()===0)?d.getFullYear():'&nbsp;')+'</div>';}
+  head+='</div></div>';
+  const mx=Math.max.apply(null,cnt);
+  head+='<div class="grow ghead"><div class="glabel">Aufgaben im Monat</div><div class="gtrack">'+cnt.map(c=>'<div class="gm gl'+(mx?Math.ceil(c/mx*4):0)+'">'+(c||'')+'</div>').join('')+'</div></div>';
+  const modes='<div class="chips">'+[['rolling','Nächste 12 Monate'],['this','Dieses Jahr'],['next','Nächstes Jahr']].map(m=>'<button class="chip'+(gm===m[0]?' on':'')+'" data-gmode="'+m[0]+'">'+m[1]+'</button>').join('')+'</div>';
+  const legend='<div class="glegend"><span><i style="background:var(--accent)"></i>Haus</span>'+(gOn?'<span><i style="background:var(--garten)"></i>Garten</span>':'')+'<span><i style="background:var(--late)"></i>überfällig</span><span>helle Balken: geplante Wiederholungen</span></div>';
+  const peak=mx?'<p class="hint" style="margin:8px 0 0">Am meisten zu tun: '+MONL[(sd.getMonth()+cnt.indexOf(mx))%12]+' ('+mx+' '+(mx===1?'Aufgabe':'Aufgaben')+').</p>':'';
+  const note='<p class="hint">Die Übersicht zeigt nicht alles: Aufgaben ohne Termin ('+nots+' aktuell) fehlen, und regelmäßige Aufgaben (alle 2 Wochen oder öfter) erscheinen nur als ein Block. Tippe auf einen Balken, um die Aufgabe zu verschieben.</p>';
+  if(!rows.length&&!freq.length){el.innerHTML=modes+'<p class="empty">Noch nichts zu zeigen. Sobald Aufgaben einen Termin oder Zeitraum haben, erscheinen sie hier.</p>'+note;return;}
+  el.innerHTML=modes+legend+peak+'<div class="gwrap"><div class="ginner">'+head+body+'</div></div>'+note;
+}
+function showTab(name){
+  tab=name;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===tab));
+  $('#fab').style.display=(tab==='aufgaben'||tab==='garten')?'':'none';
+  if(tab==='jahr')try{renderGantt();}catch(e){}
+}
+document.querySelector('nav').onclick=e=>{const b=e.target.closest('[data-tab]');if(b)showTab(b.dataset.tab);};
+function applySettings(){
+  state.settings.hidden=state.settings.hidden||[];
+  state.tasks.forEach(t=>{if(t.typ==='wiederkehrend'&&!t.modus)t.modus=RASTER.includes(t.name)?'raster':'erledigung';});
+  const on=!!state.settings.garten;
+  $('#nav-garten').style.display=on?'':'none';
+  $('#set-garten').checked=on;
+  if(!on&&tab==='garten')showTab('aufgaben');
+}
+$('#set-garten').onchange=e=>{state.settings.garten=e.target.checked;save();applySettings();render();};
+
+$('#btn-export').onclick=()=>{
+  const b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='haushalt-sicherung-'+today()+'.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+$('#btn-import').onclick=()=>$('#file-import').click();
+$('#file-import').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const p=JSON.parse(r.result);
+      if(!Array.isArray(p.tasks)||!Array.isArray(p.history))throw new Error('format');
+      if(confirm('Die aktuellen Daten werden durch die Sicherung ersetzt. Fortfahren?')){state=p;state.settings=state.settings||{garten:false};save();applySettings();render();toast('Sicherung geladen',false);}
+    }catch(err){alert('Diese Datei ist keine gültige Sicherung.');}
+  };
+  r.readAsText(f);e.target.value='';
+};
+
+load();applySettings();render();
+$('#hlogo').innerHTML=LOGO;$('#wlogo').innerHTML=LOGO;
+{const lk=document.createElement('link');lk.rel='icon';lk.href='data:image/svg+xml,'+encodeURIComponent(LOGO);document.head.appendChild(lk);}
+function showWelcome(){$('#welcome').hidden=false;}
+$('#w-go').onclick=()=>{try{localStorage.setItem(WKEY,'1');}catch(e){}$('#welcome').hidden=true;};
+$('#btn-welcome').onclick=showWelcome;
+$('#f-done').onclick=()=>{
+  const d=$('#f-donedate').value,t=state.tasks.find(x=>x.id===editId);
+  if(!t||!d||d>today())return;
+  $('#dlg').close();recordDone(t,d);
+};
+$('#historie').addEventListener('click',e=>{const b=e.target.closest('[data-hedit]');if(b)openHE(b.dataset.hedit);});
+$('#he-cancel').onclick=()=>$('#he').close();
+$('#he-del').onclick=()=>{
+  const e=state.history.find(x=>x.id===heId);if(!e)return;
+  if(!confirm('Diesen Eintrag löschen?'))return;
+  undoSnap=JSON.stringify(state);
+  const back=e.prev&&isLatest(e)?restoreTask(e):null;
+  state.history=state.history.filter(x=>x.id!==heId);
+  save();render();$('#he').close();
+  toast('Eintrag gelöscht'+(back?', Aufgabe wiederhergestellt':''),true);
+};
+$('#hef').onsubmit=ev=>{
+  ev.preventDefault();
+  const e=state.history.find(x=>x.id===heId),nd=$('#he-date').value;
+  if(!e||!nd||nd>today())return;
+  undoSnap=JSON.stringify(state);
+  if(nd!==e.datum){
+    if(e.prev&&isLatest(e)){const t=restoreTask(e);if(t)finishTask(t,nd);}
+    e.datum=nd;
+  }
+  save();render();$('#he').close();toast('Datum geändert',true);
+};
+$('#btn-wipe').onclick=()=>{
+  if(!confirm('Wirklich ALLE Aufgaben, die Historie und die Einstellungen löschen? Tipp: Speichere vorher eine Sicherung.'))return;
+  if(!confirm('Letzte Rückfrage: alles löschen und von vorne anfangen?'))return;
+  undoSnap=JSON.stringify(state);
+  state={tasks:[],history:[],settings:{garten:false,hidden:[]}};
+  hB='Alle';hR='Alle';gFilter='Alle';
+  save();applySettings();render();showTab('aufgaben');toast('Alle Daten gelöscht',true);
+};
+try{if(!localStorage.getItem(WKEY))showWelcome();}catch(e){}
+})();
+</script>
+</body>
+</html>
