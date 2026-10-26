@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 0.21 vom 25.10.2026 -->
+<!-- Schwamm drüber, Version 0.22 vom 25.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -18,7 +18,7 @@
 :root[data-theme="light"]{color-scheme:light}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.4 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 "Avenir Next","Segoe UI",system-ui,sans-serif;padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 main{max-width:640px;margin:0 auto;padding:0 14px}
 header{padding:18px 14px 6px;max-width:640px;margin:0 auto}
 header h1{margin:0;font-size:1.6rem;letter-spacing:-.01em}
@@ -154,12 +154,17 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
 .data .danger{color:var(--late);border-color:var(--late)}
 .tx .where{color:var(--ink);font-weight:600}
 .entry .mini{align-self:center}
+#ask-msg{margin:0 0 6px;white-space:pre-line}
+.banner{background:var(--card);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;margin-top:10px}
+.banner b{display:block;margin-bottom:2px}
+.banner span{color:var(--muted);font-size:.9rem}
+.brow{display:flex;align-items:center;gap:14px;margin-top:10px}
 </style>
 </head>
 <body>
 <header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1></header>
 <main>
-  <section id="aufgaben" class="panel on"><div id="hchips" class="chips"></div><div id="hrooms" class="chips"></div><div id="hlist"></div></section>
+  <section id="aufgaben" class="panel on"><div id="gbanner"></div><div id="hchips" class="chips"></div><div id="hrooms" class="chips"></div><div id="hlist"></div></section>
   <section id="historie" class="panel"></section>
   <section id="garten" class="panel"><div id="gchips" class="chips"></div><div id="glist"></div></section>
   <section id="jahr" class="panel"></section>
@@ -176,7 +181,7 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
     <h2>Zurücksetzen</h2>
     <button id="btn-wipe" class="danger">Alle Daten löschen</button>
     <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
-    <p class="hint">Version 0.21 vom 25.10.2026</p>
+    <p class="hint">Version 0.22 vom 25.10.2026</p>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
@@ -197,6 +202,7 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
   <p class="hint" id="mv-hint"></p>
   <div class="btns"><button type="button" id="mv-cancel">Abbrechen</button><button class="primary">Verschieben</button></div>
 </form></dialog>
+<dialog id="ask"><p id="ask-msg"></p><div class="btns"><button type="button" id="ask-no">Abbrechen</button><button type="button" class="primary" id="ask-yes">OK</button></div></dialog>
 <dialog id="he"><form id="hef">
   <h3 id="he-title">Erledigt-Eintrag</h3>
   <label>Erledigt am<input id="he-date" type="date" required></label>
@@ -385,6 +391,9 @@ function dueInfo(t){
   if(t.typ==='wiederkehrend')txt+=', '+freq(t.n,t.einheit);
   return [txt,cls];
 }
+let askCb=null;
+function askConfirm(msg,cb,yes){$('#ask-msg').textContent=msg;$('#ask-yes').textContent=yes||'OK';$('#ask-no').style.display='';askCb=cb;$('#ask').showModal();}
+function askInfo(msg){$('#ask-msg').textContent=msg;$('#ask-yes').textContent='OK';$('#ask-no').style.display='none';askCb=null;$('#ask').showModal();}
 function ortText(t){
   const w=t.bereich==='Garten'?((t.unter&&t.unter!=='Allgemein')?t.unter:''):(t.raum||'');
   if(!w)return '';
@@ -469,7 +478,7 @@ function render(){
   $('#hrooms').innerHTML=rooms.length?'<span class="cl">Raum</span>'+chips(['Alle'].concat(rooms),hR,'hr'):'';
   renderTasks('hlist',t=>t.bereich!=='Garten'&&(hB==='Alle'||t.bereich===hB)&&(hR==='Alle'||t.raum===hR),(hB!=='Alle'||hR!=='Alle')?'Keine Aufgaben für diesen Filter.':'');
   if(!haus.length)$('#hlist').insertAdjacentHTML('beforeend',planBox('haus'));
-  if(!gOn)$('#hlist').insertAdjacentHTML('beforeend','<p class="hint">Gehört ein Garten dazu? <button class="link" data-goto="daten">Gartenbereich aktivieren</button></p>');
+  $('#gbanner').innerHTML=(!gOn&&state.settings.gartenFrage!==false)?'<div class="banner"><b>🌱 Gehört ein Garten dazu?</b><span>Dann kannst du Rasen, Beete, Hecken und mehr in einem eigenen Reiter planen.</span><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-gon="1">Garten aktivieren</button><button class="link" data-gno="1">Nicht mehr fragen</button></div></div>':'';
   if(gOn){
     const gt=act.filter(t=>t.bereich==='Garten');
     const cats=[...new Set(gt.map(t=>t.unter).filter(Boolean))].sort((a,b)=>{const i=UNTER.indexOf(a),j=UNTER.indexOf(b);return (i<0?99:i)-(j<0?99:j)||a.localeCompare(b,'de');});
@@ -529,7 +538,7 @@ function recordDone(t,d){
 function markDone(id){
   const t=state.tasks.find(x=>x.id===id);if(!t)return;
   const e=earlyDays(t);
-  if(e>0&&!confirm('„'+t.name+'“ ist erst am '+fmt(t.faellig)+' fällig (in '+e+' Tagen). Wirklich schon jetzt als erledigt eintragen?'))return;
+  if(e>0){askConfirm('„'+t.name+'“ ist erst am '+fmt(t.faellig)+' fällig (in '+e+' Tagen). Wirklich schon jetzt als erledigt eintragen?',()=>recordDone(t,today()),'Ja, erledigt');return;}
   recordDone(t,today());
 }
 function isLatest(e){const same=state.history.filter(h=>h.taskId===e.taskId);return same.length>0&&same[same.length-1].id===e.id;}
@@ -562,7 +571,9 @@ $('#aufgaben').addEventListener('click',onTaskClick);
 $('#glist').addEventListener('click',onTaskClick);
 $('#jahr').addEventListener('click',e=>{if(e.target.closest('[data-gfreq]')){ganttFreq=!ganttFreq;renderGantt();return;}onTaskClick(e);});
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode]');if(!c)return;
+  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno]');if(!c)return;
+  if(c.dataset.gon!==undefined){state.settings.garten=true;save();applySettings();render();showTab('garten');toast('Gartenbereich aktiviert',false);return;}
+  if(c.dataset.gno!==undefined){state.settings.gartenFrage=false;save();render();toast('Okay, ich frage nicht mehr. Den Garten findest du jederzeit unter „Daten“.',false);return;}
   if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
   if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
   if(c.dataset.plan!==undefined){makePlan(c.dataset.plan);return;}
@@ -706,9 +717,10 @@ $('#cat-add').onclick=()=>{
 };
 $('#f-cancel').onclick=()=>{$('#dlg').close();if(!editId)openCat();};
 $('#f-del').onclick=()=>{
-  if(editId&&confirm('Diese Aufgabe löschen? Die Historie bleibt erhalten.')){
+  if(!editId)return;
+  askConfirm('Diese Aufgabe löschen? Die Historie bleibt erhalten.',()=>{
     state.tasks=state.tasks.filter(x=>x.id!==editId);save();render();$('#dlg').close();
-  }
+  },'Löschen');
 };
 $('#frm').onsubmit=e=>{
   e.preventDefault();
@@ -766,11 +778,11 @@ $('#mvf').onsubmit=e=>{
 function planBox(scope){
   return '<div class="plan"><button class="plan-btn" data-plan="'+scope+'">Beispielplan erstellen</button><p class="hint">Legt ein Grundpaket mit den typischen Aufgaben für '+(scope==='garten'?'den Garten':'das Haus')+' auf einmal an, gleichmäßig auf die nächsten Wochen und Monate verteilt. Alle weiteren Vorschläge findest du danach über das Plus. Aufgaben mit empfohlenem Zeitraum (z. B. Fenster putzen im April) bekommen diesen. Danach kannst du alles einzeln ändern oder löschen.</p></div>';
 }
-function makePlan(scope){
+function makePlan(scope,ok){
   const g=scope==='garten',hid=state.settings.hidden||[];
   let idx=KATALOG.map((k,i)=>i).filter(i=>(BK[KATALOG[i][1]]==='Garten')===g&&GRUND.includes(KATALOG[i][0])&&!hid.includes(KATALOG[i][0]));
   if(!idx.length)return;
-  if(!confirm('Grundpaket anlegen? Es werden '+idx.length+' typische Aufgaben angelegt, gleichmäßig verteilt. Du kannst sie danach einzeln ändern oder löschen, alle weiteren Vorschläge bleiben in der Vorschlagsliste. Ausgeblendete Vorschläge werden nicht übernommen.'))return;
+  if(!ok){askConfirm('Grundpaket anlegen? Es werden '+idx.length+' typische Aufgaben angelegt, gleichmäßig verteilt. Du kannst sie danach einzeln ändern oder löschen, alle weiteren Vorschläge bleiben in der Vorschlagsliste. Ausgeblendete Vorschläge werden nicht übernommen.',()=>makePlan(scope,true),'Anlegen');return;}
   const FOLLOW={'Staub wischen':'Saugen','Wischen':'Saugen','Couch absaugen':'Saugen','Bettwäsche wechseln':'Wäsche waschen','Wasserkocher entkalken':'Küche putzen'};
   const pri=['Staub wischen','Saugen','Couch absaugen','Wischen','Bettwäsche wechseln','Wäsche waschen','Wasserkocher entkalken','Küche putzen'];
   const nm=i=>KATALOG[i][0],byName={};idx.forEach(i=>{byName[nm(i)]=i;});
@@ -907,8 +919,8 @@ $('#file-import').onchange=e=>{
     try{
       const p=JSON.parse(r.result);
       if(!Array.isArray(p.tasks)||!Array.isArray(p.history))throw new Error('format');
-      if(confirm('Die aktuellen Daten werden durch die Sicherung ersetzt. Fortfahren?')){state=p;state.settings=state.settings||{garten:false};save();applySettings();render();toast('Sicherung geladen',false);}
-    }catch(err){alert('Diese Datei ist keine gültige Sicherung.');}
+      askConfirm('Die aktuellen Daten werden durch die Sicherung ersetzt. Fortfahren?',()=>{state=p;state.settings=state.settings||{garten:false};save();applySettings();render();toast('Sicherung geladen',false);},'Ersetzen');
+    }catch(err){askInfo('Diese Datei ist keine gültige Sicherung.');}
   };
   r.readAsText(f);e.target.value='';
 };
@@ -919,6 +931,8 @@ $('#hlogo').innerHTML=LOGO;$('#wlogo').innerHTML=LOGO;
 function showWelcome(){$('#welcome').hidden=false;}
 $('#w-go').onclick=()=>{try{localStorage.setItem(WKEY,'1');}catch(e){}$('#welcome').hidden=true;};
 $('#btn-welcome').onclick=showWelcome;
+$('#ask-yes').onclick=()=>{const cb=askCb;askCb=null;$('#ask').close();if(cb)cb();};
+$('#ask-no').onclick=()=>{askCb=null;$('#ask').close();};
 $('#f-done').onclick=()=>{
   const d=$('#f-donedate').value,t=state.tasks.find(x=>x.id===editId);
   if(!t||!d||d>today())return;
@@ -928,12 +942,13 @@ $('#historie').addEventListener('click',e=>{const b=e.target.closest('[data-hedi
 $('#he-cancel').onclick=()=>$('#he').close();
 $('#he-del').onclick=()=>{
   const e=state.history.find(x=>x.id===heId);if(!e)return;
-  if(!confirm('Diesen Eintrag löschen?'))return;
-  undoSnap=JSON.stringify(state);
-  const back=e.prev&&isLatest(e)?restoreTask(e):null;
-  state.history=state.history.filter(x=>x.id!==heId);
-  save();render();$('#he').close();
-  toast('Eintrag gelöscht'+(back?', Aufgabe wiederhergestellt':''),true);
+  askConfirm('Diesen Eintrag löschen?',()=>{
+    undoSnap=JSON.stringify(state);
+    const back=e.prev&&isLatest(e)?restoreTask(e):null;
+    state.history=state.history.filter(x=>x.id!==heId);
+    save();render();$('#he').close();
+    toast('Eintrag gelöscht'+(back?', Aufgabe wiederhergestellt':''),true);
+  },'Löschen');
 };
 $('#hef').onsubmit=ev=>{
   ev.preventDefault();
@@ -947,12 +962,12 @@ $('#hef').onsubmit=ev=>{
   save();render();$('#he').close();toast('Datum geändert',true);
 };
 $('#btn-wipe').onclick=()=>{
-  if(!confirm('Wirklich ALLE Aufgaben, die Historie und die Einstellungen löschen? Tipp: Speichere vorher eine Sicherung.'))return;
-  if(!confirm('Letzte Rückfrage: alles löschen und von vorne anfangen?'))return;
-  undoSnap=JSON.stringify(state);
-  state={tasks:[],history:[],settings:{garten:false,hidden:[]}};
-  hB='Alle';hR='Alle';gFilter='Alle';
-  save();applySettings();render();showTab('aufgaben');toast('Alle Daten gelöscht',true);
+  askConfirm('Wirklich ALLE Aufgaben, die Historie und die Einstellungen löschen? Tipp: Speichere vorher eine Sicherung.',()=>askConfirm('Letzte Rückfrage: alles löschen und von vorne anfangen?',()=>{
+    undoSnap=JSON.stringify(state);
+    state={tasks:[],history:[],settings:{garten:false,hidden:[]}};
+    hB='Alle';hR='Alle';gFilter='Alle';
+    save();applySettings();render();showTab('aufgaben');toast('Alle Daten gelöscht',true);
+  },'Alles löschen'),'Weiter');
 };
 try{if(!localStorage.getItem(WKEY))showWelcome();}catch(e){}
 })();
