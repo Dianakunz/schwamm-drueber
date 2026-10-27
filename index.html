@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.2 vom 27.10.2026 -->
+<!-- Schwamm drüber, Version 1.3 vom 27.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -113,7 +113,10 @@ h3[tabindex]{outline:none}
 .plan-btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:1rem}
 :root{--garten:#6a8f1f}
 @media (prefers-color-scheme:dark){:root{--garten:#a8c95a}}
-.gwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-top:8px}
+.gwrap{overflow:auto;max-height:calc(100vh - 300px);max-height:calc(100dvh - 300px);min-height:260px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-top:8px}
+.gstick{position:sticky;top:0;z-index:5;background:var(--card)}
+.srow{display:flex;gap:10px}
+.srow select{flex:1;min-width:0}
 .ginner{min-width:930px}
 .grow{display:flex;align-items:center;border-bottom:1px solid var(--line)}
 .grow:last-child{border-bottom:0}
@@ -195,7 +198,7 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
     <h2>Zurücksetzen</h2>
     <button id="btn-wipe" class="danger">Alle Daten löschen</button>
     <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
-    <p class="hint">Version 1.2 vom 27.10.2026</p>
+    <p class="hint">Version 1.3 vom 27.10.2026</p>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
@@ -268,8 +271,10 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
   <p class="hint" id="f-tmhint"></p>
   <div id="f-tmdates"><label id="f-datewrap"><span id="f-datelbl">Datum</span><input id="f-date" type="date"></label><label id="f-biswrap">Bis<input id="f-bis" type="date"></label></div>
   <p class="hint" id="f-tipp"></p>
+  <div id="f-wtwrap"><label>Bevorzugter Wochentag (optional)<select id="f-wt"><option value="">Kein Wunsch</option><option value="1">Montag</option><option value="2">Dienstag</option><option value="3">Mittwoch</option><option value="4">Donnerstag</option><option value="5">Freitag</option><option value="6">Samstag</option><option value="0">Sonntag</option><option value="we">Wochenende (Samstag oder Sonntag)</option></select></label>
+    <p class="hint">Nach dem Erledigen rutscht der nächste Termin auf den nächstgelegenen passenden Tag, höchstens 3 Tage daneben. Gilt ab dem nächsten Termin, den aktuellen änderst du über „Verschieben“.</p></div>
   <div id="f-saisonwrap"><div class="lbl">Saison (optional)</div>
-    <div class="row"><select id="f-sv"></select><select id="f-sb"></select></div>
+    <div class="srow"><select id="f-sv"></select><select id="f-sb"></select></div>
     <p class="hint">Außerhalb der Saison ruht die Aufgabe: Sie steht dann ganz unten unter „Außerhalb der Saison“, erscheint nicht in den Erinnerungen und in der Jahresübersicht, und der nächste Termin springt auf den Saisonbeginn.</p></div>
   <div id="f-exwrap"><div class="lbl">Zusätze (optional)</div>
     <p class="hint">Arbeiten, die nur bei jedem x-ten Erledigen anfallen, z. B. Entkalken bei der Reinigung einer Kaffeemaschine. Auf der Karte steht dann „Diesmal zusätzlich“. Mehrere Zusätze lassen sich über „erstmals beim“ im Wechsel legen.</p>
@@ -444,6 +449,21 @@ function restCard(t){
   const z=t.saison,ort=ortText(t);
   return '<article class="card rest"><div class="ic">'+esc(iconFor(t))+'</div><div class="tx"><b>'+esc(t.name)+'</b><span class="where">'+esc(ort)+'</span><span>Pause, Saison '+MONK[z.von-1]+' bis '+MONK[z.bis-1]+'</span></div><div class="acts"><div class="sec"><button class="mini mute" data-edit="'+t.id+'">Bearbeiten</button></div></div></article>';
 }
+function toWeekday(t,d,after,fwd){
+  const w=t.wochentag;if(!w||!w.length)return d;
+  const D=parse(d);let best=null;
+  for(let off=fwd?0:-3;off<=(fwd?6:3);off++){
+    const x=new Date(D.getFullYear(),D.getMonth(),D.getDate()+off);
+    if(!w.includes(x.getDay()))continue;
+    const key=Math.abs(off)*2+(off>0?0:1);
+    if(!best||key<best.key)best={key:key,x:x};
+  }
+  if(!best)return d;
+  let r=iso(best.x);
+  while(after&&r<=after)r=addIv(r,7,'Tage');
+  return r;
+}
+function wtLabel(w){return !w||!w.length?'':(w.length>1?'we':String(w[0]));}
 function ortText(t){
   const w=t.bereich==='Garten'?((t.unter&&t.unter!=='Allgemein')?t.unter:''):(t.raum||'');
   if(!w)return '';
@@ -572,6 +592,11 @@ function finishTask(t,d){
   else if(t.modus==='raster'&&t.faellig){do{t.faellig=addIv(t.faellig,t.n,t.einheit);}while(t.faellig<=today());}
   else t.faellig=addIv(d,t.n,t.einheit);
   if(t.saison&&t.faellig&&!t.bis)t.faellig=seasonStart(t,t.faellig);
+  if(t.wochentag&&t.faellig&&!t.bis){
+    let f=toWeekday(t,t.faellig,d,false);
+    if(t.saison&&!inSeason(t,f)){f=toWeekday(t,t.faellig,d,true);if(!inSeason(t,f))f=t.faellig;}
+    t.faellig=f;
+  }
 }
 function earlyDays(t){
   if(t.typ!=='wiederkehrend'||!t.faellig||!t.n)return 0;
@@ -674,6 +699,7 @@ function syncForm(){
   const typ=$('#f-typ').value,tm=$('#f-tm').value,ohne=typ==='ohne';
   $('#f-iv').style.display=typ==='wiederkehrend'?'':'none';
   $('#f-exwrap').style.display=typ==='wiederkehrend'?'':'none';
+  $('#f-wtwrap').style.display=(typ==='wiederkehrend'&&tm!=='zeitraum'&&!($('#f-u').value==='Tage'&&(+$('#f-n').value||1)<7))?'':'none';
   $('#f-saisonwrap').style.display=((typ==='wiederkehrend'&&tm!=='zeitraum')||typ==='ohne')?'':'none';
   const mod=typ==='wiederkehrend'&&tm!=='zeitraum';
   $('#f-modwrap').style.display=$('#f-ivhint').style.display=mod?'':'none';
@@ -704,11 +730,12 @@ function openForm(id,preset,proto){
   $('#f-typ').value=src?src.typ:'wiederkehrend';
   $('#f-n').value=src&&src.n?src.n:1;$('#f-u').value=src&&src.einheit?src.einheit:'Wochen';
   $('#f-modus').value=src&&src.modus?src.modus:'erledigung';
+  $('#f-wt').value=src?wtLabel(src.wochentag):'';
   $('#f-sv').innerHTML='<option value="">Ganzjährig</option>'+MONK.map((m,i)=>'<option value="'+(i+1)+'">von '+m+'</option>').join('');
   $('#f-sb').innerHTML=MONK.map((m,i)=>'<option value="'+(i+1)+'">bis '+m+'</option>').join('');
   $('#f-sv').value=src&&src.saison?String(src.saison.von):'';
   $('#f-sb').value=src&&src.saison?String(src.saison.bis):'9';
-  $('#f-sb').disabled=!$('#f-sv').value;
+  $('#f-sb').style.display=$('#f-sv').value?'':'none';
   $('#f-extras').innerHTML='';((src&&src.extras)||[]).forEach(x=>addExRow(x.text,x.alle,x.ab));
   $('#f-tm').value=src&&src.bis&&src.faellig?'zeitraum':src&&src.faellig?'datum':'offen';
   $('#f-date').value=src&&src.faellig?src.faellig:'';
@@ -721,9 +748,11 @@ function openForm(id,preset,proto){
 }
 $('#f-typ').onchange=syncForm;
 $('#f-modus').onchange=syncForm;
+$('#f-n').oninput=syncForm;
+$('#f-u').onchange=syncForm;
 $('#f-sv').onchange=()=>{
-  const was=$('#f-sb').disabled,v=+$('#f-sv').value;
-  $('#f-sb').disabled=!v;
+  const was=$('#f-sb').style.display==='none',v=+$('#f-sv').value;
+  $('#f-sb').style.display=v?'':'none';
   if(v&&was)$('#f-sb').value=String((v+4)%12+1);
 };
 $('#f-exadd').onclick=()=>addExRow();
@@ -795,6 +824,7 @@ $('#frm').onsubmit=e=>{
     n:typ==='wiederkehrend'?Math.max(1,parseInt($('#f-n').value,10)||1):null,
     einheit:typ==='wiederkehrend'?$('#f-u').value:null,
     modus:typ==='wiederkehrend'?$('#f-modus').value:null,
+    wochentag:(typ==='wiederkehrend'&&tm!=='zeitraum'&&$('#f-wt').value!=='')?($('#f-wt').value==='we'?[6,0]:[+$('#f-wt').value]):null,
     saison:(((typ==='wiederkehrend'&&tm!=='zeitraum')||typ==='ohne')&&+$('#f-sv').value)?{von:+$('#f-sv').value,bis:+$('#f-sb').value||+$('#f-sv').value}:null,
     extras:typ==='wiederkehrend'?readEx():[],
     faellig:(typ==='ohne'||tm==='offen')?null:($('#f-date').value||null),
@@ -867,11 +897,14 @@ function makePlan(scope,ok){
   const WE=['Küchenabzug saubermachen','Waschmaschine reinigen','Staubsauger reinigen','Hauseingang reinigen','Küchenvorräte überprüfen und aussortieren'],weDay={};
   idx.filter(i=>WE.includes(nm(i))&&off[i]!==undefined).forEach((i,j)=>{weDay[i]=nm(i)==='Küchenvorräte überprüfen und aussortieren'?0:(j%2?0:6);});
   const snap=(x,wd)=>addIv(x,(wd-parse(x).getDay()+7)%7,'Tage'),usedWE=new Set();
+  const coupled=new Set(foll.concat(foll.map(i=>byName[FOLLOW[nm(i)]])));
   undoSnap=JSON.stringify(state);
   idx.forEach(i=>{
     const t=Object.assign({id:uid(),erledigt:false,raum:'',notiz:''},protoTask(i));
     if(t.bereich!=='Garten')t.raum=guessRaum(t.name);
     if(off[i]!==undefined){let f=addIv(T,off[i],'Tage');if(weDay[i]!==undefined){f=snap(f,weDay[i]);while(usedWE.has(f))f=addIv(f,7,'Tage');usedWE.add(f);}t.faellig=f;t.bis=null;if(t.saison)t.faellig=seasonStart(t,t.faellig);}
+    if(weDay[i]!==undefined)t.wochentag=nm(i)==='Küchenvorräte überprüfen und aussortieren'?[0]:[6,0];
+    else if(coupled.has(i)&&t.faellig&&!t.bis)t.wochentag=[parse(t.faellig).getDay()];
     state.tasks.push(t);
   });
   save();render();toast(idx.length+' Aufgaben angelegt',true);
@@ -952,7 +985,7 @@ function renderGantt(){
   const peak=mx?'<p class="hint" style="margin:8px 0 0">Am meisten zu tun: '+MONL[(sd.getMonth()+cnt.indexOf(mx))%12]+' ('+mx+' '+(mx===1?'Aufgabe':'Aufgaben')+').</p>':'';
   const note='<p class="hint">Die Übersicht zeigt nicht alles: Aufgaben ohne Termin ('+nots+' aktuell) fehlen, und regelmäßige Aufgaben (alle 2 Wochen oder öfter) erscheinen nur als ein Block. Tippe auf einen Balken, um die Aufgabe zu verschieben.</p>';
   if(!rows.length&&!freq.length){el.innerHTML=modes+'<p class="empty">Noch nichts zu zeigen. Sobald Aufgaben einen Termin oder Zeitraum haben, erscheinen sie hier.</p>'+note;return;}
-  el.innerHTML=modes+legend+peak+'<div class="gwrap"><div class="ginner">'+head+body+'</div></div>'+note;
+  el.innerHTML=modes+legend+peak+'<div class="gwrap"><div class="ginner"><div class="gstick">'+head+'</div>'+body+'</div></div>'+note;
 }
 const RKEY='haushalt-remind-v1';
 let hiddenAt=0;
