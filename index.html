@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.0 vom 26.10.2026 -->
+<!-- Schwamm drüber, Version 1.1 vom 27.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -36,8 +36,8 @@ button,select,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 .done{background:var(--accent);color:var(--on-accent);border:0;border-radius:10px;padding:9px 12px;font-weight:600}
 .empty{color:var(--muted);padding:30px 6px}
-.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);font-size:2rem;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.25)}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.fab{position:fixed;z-index:25;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);font-size:2rem;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+nav{position:fixed;z-index:30;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav button{flex:1;background:none;border:0;padding:12px 2px;font-size:.92rem;color:var(--muted);font-weight:600}
 nav button.on{color:var(--accent);box-shadow:inset 0 3px 0 var(--accent)}
 dialog{width:min(92vw,460px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);padding:16px}
@@ -57,7 +57,7 @@ input,select,textarea{width:100%;margin-top:3px;padding:9px;border:1px solid var
 .stat{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
 .entry{display:flex;gap:10px;padding:6px 0}
 .big{font-size:2rem;font-weight:700;color:var(--accent)}
-#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;display:none;gap:12px;align-items:center;max-width:90vw}
+#toast{position:fixed;z-index:40;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;display:none;gap:12px;align-items:center;max-width:90vw}
 #toast.on{display:flex}
 #toast button{background:none;border:0;color:var(--accent);font-weight:700;padding:0}
 .data button{display:block;width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid var(--line);background:var(--card)}
@@ -102,9 +102,12 @@ header.brand{display:flex;align-items:center;gap:10px}
 #w-go{width:100%;padding:14px;border-radius:12px;border:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:1.1rem;margin-bottom:14px}
 .wsub2{color:var(--accent);font-weight:700;font-size:1.05rem;margin:0 0 28px}
 .tx .ex{color:var(--accent);font-weight:600}
-.exrow{display:flex;gap:6px;align-items:center;margin-top:6px}
+.exitem{border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px}
+.exrow{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.exitem .exrow:first-child{margin-top:0}
 .exrow input.ex-t{flex:1;min-width:0;margin:0}
-.exrow input.ex-n{width:62px;margin:0}
+.exrow input.ex-n,.exrow input.ex-k{width:62px;margin:0}
+h3[tabindex]{outline:none}
 #cat-q{position:sticky;top:-16px;z-index:2;margin-bottom:6px}
 .plan{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;text-align:center}
 .plan-btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:1rem}
@@ -114,20 +117,20 @@ header.brand{display:flex;align-items:center;gap:10px}
 .ginner{min-width:930px}
 .grow{display:flex;align-items:center;border-bottom:1px solid var(--line)}
 .grow:last-child{border-bottom:0}
-.glabel{position:sticky;left:0;z-index:2;flex:none;width:140px;padding:6px 8px;background:var(--card);font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-right:1px solid var(--line);text-align:left;color:var(--ink)}
+.glabel{position:sticky;left:0;z-index:2;flex:none;width:150px;padding:6px 8px;background:var(--card);font-size:.85rem;line-height:1.25;overflow-wrap:anywhere;white-space:normal;align-self:stretch;display:flex;align-items:center;border-right:1px solid var(--line);text-align:left;color:var(--ink)}
 button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:.85rem;color:var(--accent);font-weight:600}
-.gtrack{position:relative;flex:1 0 780px;height:28px;background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(100%/12 - 1px),var(--line) calc(100%/12 - 1px),var(--line) calc(100%/12))}
+.gtrack{position:relative;flex:1 0 780px;min-height:34px;align-self:stretch;background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(100%/12 - 1px),var(--line) calc(100%/12 - 1px),var(--line) calc(100%/12))}
 .ghead .gtrack{display:flex;height:auto;background:none}
 .gm{flex:1;text-align:center;font-size:.78rem;padding:3px 0;color:var(--muted);line-height:1.2}
 .gsec .glabel{font-weight:700}
 .gsec{background:var(--bg)}
 .gsec .glabel{background:var(--bg)}
-.gbar{position:absolute;top:6px;height:16px;min-width:10px;border-radius:8px;border:0;padding:0;background:var(--accent)}
+.gbar{position:absolute;top:50%;transform:translateY(-50%);height:16px;min-width:10px;border-radius:8px;border:0;padding:0;background:var(--accent)}
 .gbar.garten{background:var(--garten)}
 .gbar.late{background:var(--late)}
 .gbar.proj{opacity:.4}
 .gtoday{position:absolute;top:0;bottom:0;width:2px;background:var(--late);opacity:.55;pointer-events:none}
-.gband{position:absolute;left:0;right:0;top:11px;height:6px;border-radius:3px;background:var(--muted);opacity:.35}
+.gband{position:absolute;left:0;right:0;top:50%;margin-top:-3px;height:6px;border-radius:3px;background:var(--muted);opacity:.35}
 .glegend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted);margin-top:10px}
 .glegend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-2px;margin-right:4px}
 .gl1{background:color-mix(in srgb,var(--accent) 14%,transparent)}
@@ -148,7 +151,7 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
 .hleg div{font-size:.88rem;margin:4px 0}
 .hleg i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:6px}
 .rk{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.9rem}
-.rkn{flex:0 0 42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rkn{flex:0 0 42%;overflow-wrap:anywhere;line-height:1.25}
 .rkb{flex:1;height:10px;background:var(--line);border-radius:5px;overflow:hidden}
 .rkb i{display:block;height:100%;background:var(--accent)}
 .data .danger{color:var(--late);border-color:var(--late)}
@@ -191,18 +194,18 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
     <h2>Zurücksetzen</h2>
     <button id="btn-wipe" class="danger">Alle Daten löschen</button>
     <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
-    <p class="hint">Version 1.0 vom 26.10.2026</p>
+    <p class="hint">Version 1.1 vom 27.10.2026</p>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
-<dialog id="cat"><h3>Aufgabe hinzufügen</h3>
+<dialog id="cat"><h3 tabindex="-1" autofocus>Aufgabe hinzufügen</h3>
   <p class="hint">Wähle eine Aufgabe aus. Im nächsten Schritt siehst du die Vorschläge für Wiederholung und Termin und kannst sie ändern. Mit ✕ blendest du Vorschläge aus, die du nicht brauchst.</p>
   <input id="cat-q" type="search" placeholder="Suchen …" autocomplete="off">
   <div id="cat-list" class="cat"></div>
   <div class="btns"><button type="button" id="cat-own">Eigene Aufgabe</button><button type="button" id="cat-close">Abbrechen</button><button type="button" class="primary" id="cat-add" disabled>Weiter</button></div>
 </dialog>
 <dialog id="mv"><form id="mvf">
-  <h3 id="mv-title">Verschieben</h3>
+  <h3 id="mv-title" tabindex="-1" autofocus>Verschieben</h3>
   <label><span id="mv-albl">Neuer Termin</span><input id="mv-a" type="date" required></label>
   <label id="mv-bwrap">Neues Ende<input id="mv-b" type="date"></label>
   <div id="mv-modes">
@@ -212,10 +215,10 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
   <p class="hint" id="mv-hint"></p>
   <div class="btns"><button type="button" id="mv-cancel">Abbrechen</button><button class="primary">Verschieben</button></div>
 </form></dialog>
-<dialog id="rem"><h3>Das steht an</h3><div id="rem-body"></div><div class="btns"><button type="button" id="rem-later">Später</button><button type="button" class="primary" id="rem-go">Zu den Aufgaben</button></div></dialog>
+<dialog id="rem"><h3>Das steht an</h3><div id="rem-body"></div><div class="btns"><button type="button" class="primary" id="rem-ok">Verstanden</button></div></dialog>
 <dialog id="ask"><p id="ask-msg"></p><div class="btns"><button type="button" id="ask-no">Abbrechen</button><button type="button" class="primary" id="ask-yes">OK</button></div></dialog>
 <dialog id="he"><form id="hef">
-  <h3 id="he-title">Erledigt-Eintrag</h3>
+  <h3 id="he-title" tabindex="-1" autofocus>Erledigt-Eintrag</h3>
   <label>Erledigt am<input id="he-date" type="date" required></label>
   <p class="hint" id="he-hint"></p>
   <div class="btns"><button type="button" id="he-del" class="danger">Löschen</button><button type="button" id="he-cancel">Abbrechen</button><button class="primary">Speichern</button></div>
@@ -226,7 +229,7 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
   <p class="wsub" style="margin-bottom:6px">Einmal eingetragen, nie mehr vergessen</p>
   <p class="wsub2">Haus und Garten im Rhythmus</p>
   <button id="w-go">Jetzt loslegen</button>
-  <p class="hint">Deine Daten bleiben auf diesem Gerät. Eine Sicherung findest du unter „Daten“.</p>
+  <p class="hint">Deine Daten bleiben auf diesem Gerät. Eine Sicherung findest du unter „Optionen“.</p>
 </div></div>
 <div id="toast"><span id="toast-text"></span><button id="toast-undo">Rückgängig</button></div>
 <nav>
@@ -234,12 +237,12 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
   <button data-tab="garten" id="nav-garten" style="display:none">Garten</button>
   <button data-tab="jahr">Jahr</button>
   <button data-tab="historie">Historie</button>
-  <button data-tab="daten">Daten</button>
+  <button data-tab="daten">Optionen</button>
 </nav>
 
 <dialog id="dlg">
 <form id="frm">
-  <h3 id="ftitle">Neue Aufgabe</h3>
+  <h3 id="ftitle" tabindex="-1" autofocus>Neue Aufgabe</h3>
   <div id="f-donewrap" class="plan" style="text-align:left;margin-top:0"><div class="lbl" style="margin-top:0">Als erledigt eintragen</div>
     <div style="display:flex;gap:8px;align-items:center"><input id="f-donedate" type="date" style="margin:0"><button type="button" id="f-done" class="plan-btn" style="width:auto;padding:9px 14px">Eintragen</button></div>
     <p class="hint">Für Aufgaben, die du vergessen hattest abzuhaken. Der nächste Termin richtet sich nach diesem Datum.</p></div>
@@ -265,7 +268,7 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
   <div id="f-tmdates"><label id="f-datewrap"><span id="f-datelbl">Datum</span><input id="f-date" type="date"></label><label id="f-biswrap">Bis<input id="f-bis" type="date"></label></div>
   <p class="hint" id="f-tipp"></p>
   <div id="f-exwrap"><div class="lbl">Zusätze (optional)</div>
-    <p class="hint">Arbeiten, die nur bei jedem x-ten Erledigen anfallen, z. B. Entkalken. Auf der Karte steht dann „Diesmal zusätzlich“.</p>
+    <p class="hint">Arbeiten, die nur bei jedem x-ten Erledigen anfallen, z. B. Entkalken bei der Reinigung einer Kaffeemaschine. Auf der Karte steht dann „Diesmal zusätzlich“. Mehrere Zusätze lassen sich über „erstmals beim“ im Wechsel legen.</p>
     <div id="f-extras"></div>
     <button type="button" id="f-exadd" class="mini">+ Zusatz hinzufügen</button></div>
   <label>Notiz<textarea id="f-note" rows="2" maxlength="300"></textarea></label>
@@ -292,35 +295,33 @@ const UNTER=['Rasen','Hecken','Obstbäume','Beeren','Gemüse','Kräuter','Bäume
 const RASTER=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln'];
 const WKEY='haushalt-welcome-v1';
 const LOGO='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><g transform="rotate(-10 60 62)"><rect x="14" y="32" width="92" height="58" rx="14" fill="#f2c230"/><path d="M14 72H106V76A14 14 0 0 1 92 90H28A14 14 0 0 1 14 76Z" fill="#2e9d6f"/><ellipse cx="36" cy="50" rx="6" ry="4.5" fill="#d6a21a"/><ellipse cx="64" cy="46" rx="7" ry="5" fill="#d6a21a"/><ellipse cx="88" cy="56" rx="5" ry="4" fill="#d6a21a"/><ellipse cx="52" cy="62" rx="4.5" ry="3.5" fill="#d6a21a"/></g><circle cx="98" cy="24" r="10" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/><circle cx="114" cy="44" r="5" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/><circle cx="80" cy="12" r="5" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/></svg>';
-const GRUND=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln','Blumen gießen','Lichtschalter und Türgriffe desinfizieren','Couch absaugen','Spülmaschine reinigen','Waschmaschine reinigen','Backofen reinigen','Küchenabzug saubermachen','Staubsauger reinigen','Wasserkocher entkalken','Küchenvorräte überprüfen und aussortieren','Fenster putzen','Hauseingang reinigen','Rasen mähen','Rasen düngen','Bäume und Sträucher schneiden','Gartenmöbel winterfest machen','Wasserleitungen im Garten winterfest machen','Gartengeräte reinigen und pflegen'];
+const GRUND=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln','Blumen gießen','Lichtschalter und Türgriffe desinfizieren','Couch absaugen','Spülmaschine reinigen','Waschmaschine reinigen','Küchenabzug saubermachen','Staubsauger reinigen','Wasserkocher entkalken','Küchenvorräte überprüfen und aussortieren','Fenster putzen','Hauseingang reinigen','Rasen mähen','Rasen düngen','Bäume und Sträucher schneiden','Gartenmöbel winterfest machen','Wasserleitungen im Garten winterfest machen','Gartengeräte reinigen und pflegen'];
 const ALT={'Wohnbereich':'Im Haus','Haus außen':'Rund ums Haus','Außenanlagen':'Garten'};
 const BICON={'Im Haus':'🏠','Keller und Nebengebäude':'📦','Rund ums Haus':'🏡','Garten':'🌳'};
-const ICONMAP=[['gartenmöbel','🪑'],['wasserleitung','🚰'],['gartengeräte','🛠️'],['kübelpflanzen','🪴'],['gewächshaus','🏡'],['hochbeet','🥕'],['beete winterfest','❄️'],['beete','🥕'],['beerensträucher','🫐'],['erdbeer','🍓'],['obstbäume','🍎'],['kompost','♻️'],['hecke','✂️'],['kräuter','🌿'],['vertikutieren','🧹'],['düngen','🌾'],['bettwäsche','🛏️'],['couch','🛋️'],['kissen','🛋️'],['waschmaschine','🧺'],['wäsche','🧺'],['spülmaschine','🍽️'],['kaffee','☕'],['milchsystem','☕'],['wasserkocher','🫖'],['backofen','🍳'],['mikrowelle','🍲'],['airfryer','🍟'],['abzug','💨'],['vorräte','🥫'],['küche','🍳'],['bad','🛁'],['fenster','🪟'],['spiegel','🪞'],['blume','🌷'],['einkauf','🛒'],['dachrinne','🏠'],['hauseingang','🚪'],['einfahrt','🚪'],['unkraut','🌿'],['baum','🌳'],['bäume','🌳'],['rasen','🌱'],['garage','🚗'],['werkstatt','🔧'],['schuppen','🏚️'],['licht','💡'],['schrank','🗄️'],['tisch','🪑'],['fußleiste','🧽'],['wisch','🧽'],['staubsauger','🌀'],['staub','🧹'],['saug','🧹'],['keller','📦']];
+const ICONMAP=[['winterfest','❄️'],['frostempfindliche','❄️'],['herbst abräumen','🍂'],['gartenmöbel','🪑'],['wasserleitung','🚰'],['gartengeräte','🛠️'],['kübelpflanzen','🪴'],['gewächshaus','🏡'],['hochbeet','🥕'],['beete','🥕'],['beerensträucher','🫐'],['erdbeer','🍓'],['obstbäume','🍎'],['kompost','♻️'],['hecke','🌲'],['kräuter','🌿'],['rasen','🌱'],['vertikutieren','🧹'],['düngen','🌾'],['bettwäsche','🛏️'],['couch','🛋️'],['kissen','🛋️'],['waschmaschine','🧺'],['wäsche','🧺'],['handtüch','🧺'],['vorhänge','🧺'],['esstisch','🍽️'],['spülmaschine','🧼'],['kaffee','☕'],['milchsystem','☕'],['wasserkocher','🫖'],['backofen','🔥'],['mikrowelle','🔥'],['airfryer','🔥'],['abzug','💨'],['vorräte','🥫'],['küche','🍴'],['bad','🛁'],['fenster','🪟'],['spiegel','🪞'],['blume','🌷'],['einkauf','🛒'],['mülleimer','🗑️'],['rauchmelder','🔔'],['heizung','🌡️'],['apotheke','💊'],['dachrinne','🏠'],['hauseingang','🚪'],['einfahrt','🚪'],['unkraut','🌿'],['baum','🌳'],['bäume','🌳'],['garage','🚗'],['werkstatt','🔧'],['schuppen','🏚️'],['licht','🧴'],['schränke','🗄️'],['schrank','🗄️'],['fußleiste','🪶'],['staub wischen','🪶'],['wisch','🧽'],['staubsauger','🌀'],['staub','🪶'],['saug','🧹'],['keller','📦']];
 /* Vorschlagsliste: [Name, Bereich, Art, n, Einheit, Startmonat des guten Zeitfensters (0 = egal), Tipp] */
 const W='wiederkehrend',O='ohne';
 const KATALOG=[
 ['Saugen','H',W,1,'Wochen',0,'Einmal pro Woche, Flur und Küche bei Bedarf öfter. Erst Staub wischen, dann saugen. Alle 4 Wochen auch unter Möbeln und Betten saugen.',null,[['Unter Möbeln und Betten saugen',4]]],
 ['Wischen','H',W,2,'Wochen',0,'Alle 2 Wochen, nach dem Saugen. Küche und Bad bei Bedarf öfter.'],
 ['Staub wischen','H',W,1,'Wochen',0,'Wöchentlich mit feuchtem Tuch, von oben nach unten. Alle 4 Wochen auch Lampen, Regalböden und Bilderrahmen.',null,[['Lampen, Regalböden und Bilderrahmen abstauben',4]]],
-['Küche putzen','H',W,1,'Wochen',0,'Arbeitsflächen täglich abwischen, gründlich einmal pro Woche. Den Kühlschrank etwa monatlich auswischen, den Abfluss des Spülbeckens etwa alle 2 Monate reinigen.',null,[['Kühlschrank auswischen',4],['Spülbecken-Abfluss reinigen',8]]],
-['Bad putzen','H',W,1,'Wochen',0,'Wöchentlich. Duschwand und Armaturen nach dem Duschen abziehen gegen Kalk. Den Duschkopf etwa monatlich entkalken, den Abfluss etwa alle 2 Monate reinigen.',null,[['Duschkopf und Armaturen entkalken',4],['Abfluss reinigen',8]]],
+['Küche putzen','H',W,1,'Wochen',0,'Arbeitsflächen täglich abwischen, gründlich einmal pro Woche. Die Zusätze wechseln sich ab: Mikrowelle alle 2 Wochen, Kühlschrank etwa monatlich, Abfluss des Spülbeckens etwa alle 2 Monate, Backofen etwa alle 3 Monate (Pyrolyse- oder Reinigungsprogramm nutzen, wenn vorhanden).',null,[['Mikrowelle auswischen',2,2],['Kühlschrank auswischen',4,1],['Spülbecken-Abfluss reinigen',8,3],['Backofen reinigen',12,7]]],
+['Bad putzen','H',W,1,'Wochen',0,'Wöchentlich. Duschwand und Armaturen nach dem Duschen abziehen gegen Kalk. Den Duschkopf etwa monatlich entkalken, den Abfluss etwa alle 2 Monate reinigen.',null,[['Duschkopf und Armaturen entkalken',4],['Abfluss reinigen',8,6]]],
 ['Wäsche waschen','H',W,1,'Wochen',0,'Je nach Haushalt 1 bis 3 Mal pro Woche. Volle Maschinen sparen Energie.'],
 ['Einkaufen','H',W,1,'Wochen',0,'Einmal pro Woche mit Einkaufsliste, Vorräte vorher kurz prüfen.'],
 ['Blumen gießen','H',W,1,'Wochen',0,'Bei vielen Pflanzen reicht einmal pro Woche, durstige Pflanzen öfter. Fingerprobe: oben trocken heißt gießen. Am besten morgens. In der Wachstumszeit (März bis September) etwa alle 4 Wochen düngen.',null,[['Pflanzen düngen (nur März bis September)',4]]],
 ['Spiegel putzen','H',W,2,'Wochen',0,'Alle 1 bis 2 Wochen mit Mikrofasertuch, dann ohne Streifen.'],
 ['Lichtschalter und Türgriffe desinfizieren','H',W,1,'Monate',0,'Einmal im Monat reicht meist, in der Erkältungszeit alle 2 Wochen.'],
 ['Bettwäsche wechseln','H',W,2,'Wochen',0,'Alle 2 Wochen, im Sommer oder bei starkem Schwitzen wöchentlich. Mit 60 Grad waschen. Etwa alle 8 Wochen die Matratze absaugen und lüften.',null,[['Matratze absaugen und lüften',4]]],
-['Mikrowelle reinigen','H',W,2,'Wochen',0,'Alle 2 Wochen. Schale mit Wasser und Zitrone erhitzen, dann auswischen.'],
 ['Airfryer reinigen','H',W,1,'Wochen',0,'Korb und Schublade nach jedem Gebrauch auswaschen, einmal pro Woche gründlich. Etwa monatlich auch Heizspirale und Innenraum auswischen, nur ausgesteckt und abgekühlt.',null,[['Heizspirale und Innenraum auswischen',4]]],
 ['Couch absaugen','H',W,1,'Monate',0,'Monatlich mit Polsterdüse, Kissen vorher ausklopfen.'],
 ['Fußleisten abstauben','H',W,1,'Monate',0,'Monatlich, am besten zusammen mit dem Staubwischen.'],
 ['Wasserkocher entkalken','H',W,6,'Wochen',0,'Alle 4 bis 8 Wochen, bei hartem Wasser öfter. Zitronensäure verwenden und gut nachspülen.'],
-['Kaffeemaschine reinigen','H',W,1,'Wochen',0,'Wöchentlich Brühgruppe und Behälter reinigen, bei Vollautomaten mit Milchsystem auch dieses gründlich. Die Zusätze erscheinen automatisch zum passenden Zeitpunkt (Tablette etwa monatlich, Entkalken etwa alle 2 Monate, je nach Wasserhärte). Herstellerangaben beachten.',null,[['Mit Reinigungstablette reinigen',4],['Entkalken',8]]],
+['Kaffeemaschine reinigen','H',W,1,'Wochen',0,'Wöchentlich Brühgruppe und Behälter reinigen, bei Vollautomaten mit Milchsystem auch dieses gründlich. Die Zusätze erscheinen automatisch zum passenden Zeitpunkt (Tablette etwa monatlich, Entkalken etwa alle 2 Monate, je nach Wasserhärte). Herstellerangaben beachten.',null,[['Mit Reinigungstablette reinigen',4],['Entkalken',8,6]]],
 ['Spülmaschine reinigen','H',W,1,'Monate',0,'Sieb monatlich reinigen (bei starker Nutzung öfter) und die Dichtung auswischen. Etwa alle 3 Monate zusätzlich ein Leerlauf mit Maschinenreiniger.',null,[['Leerlauf mit Maschinenreiniger',3]]],
 ['Waschmaschine reinigen','H',W,2,'Monate',0,'Alle 2 Monate Dichtung und Waschmittelschublade auswischen und einen Leerlauf mit mindestens 60 Grad laufen lassen (wer viel bei 30 bis 40 Grad wäscht, eher monatlich). Das Flusensieb etwa alle 4 Monate reinigen. Die Tür danach offen lassen.',null,[['Flusensieb reinigen',2]]],
 ['Staubsauger reinigen','H',W,3,'Monate',0,'Alle 3 Monate die Bürste von Haaren befreien und Beutel oder Behälter prüfen (Beutel wechseln, wenn etwa zwei Drittel voll). Etwa alle 6 Monate den Filter auswaschen oder wechseln, je nach Herstellerangabe.',null,[['Filter auswaschen oder wechseln',2]]],
 ['Küchenabzug saubermachen','H',W,3,'Monate',0,'Fettfilter alle 1 bis 3 Monate, je nach Kochhäufigkeit. Oft spülmaschinengeeignet. Bei Umluft den Aktivkohlefilter etwa alle 6 Monate wechseln.',null,[['Aktivkohlefilter wechseln (nur bei Umluft)',2]]],
-['Backofen reinigen','H',W,3,'Monate',0,'Alle 3 Monate oder nach starken Spritzern. Pyrolyse- oder Reinigungsprogramm nutzen, wenn vorhanden.'],
 ['Küchenvorräte überprüfen und aussortieren','H',W,3,'Monate',0,'Alle 3 Monate Haltbarkeit prüfen, Älteres nach vorne stellen.'],
 ['Kissen waschen','H',W,6,'Monate',0,'Kissenfüllungen bis zu 2 Mal im Jahr, Bezüge öfter. Pflegeetikett beachten.'],
 ['Schränke innen reinigen','H',W,6,'Monate',3,'Zweimal im Jahr, z. B. im Frühjahr und Herbst. Ein Schrank pro Woche ist leichter als alle auf einmal.'],
@@ -343,7 +344,7 @@ const KATALOG=[
 ['Obstbäume im Sommer schneiden','G',W,12,'Monate',8,'Sommerschnitt im Juli oder August bremst das Wachstum. Kirschen am besten direkt nach der Ernte schneiden.','Obstbäume'],
 ['Bäume und Sträucher schneiden','G',W,12,'Monate',2,'Starker Rückschnitt nur vom 1. Oktober bis 28. Februar erlaubt, leichter Formschnitt ganzjährig. Frühjahrsblüher erst nach der Blüte.','Bäume und Sträucher'],
 ['Beete vorbereiten','G',W,12,'Monate',3,'Im März oder April den Boden lockern und Kompost einarbeiten, sobald er weder gefroren noch nass ist.','Gemüse'],
-['Beete im Herbst abräumen und mulchen','G',W,12,'Monate',10,'Im Oktober oder November abgeerntete Beete abräumen und den Boden mulchen oder mit Gründüngung bedecken.','Gemüse'],
+['Abgeerntete Beete im Herbst abräumen und mulchen','G',W,12,'Monate',10,'Nur abgeerntete Beete: Pflanzenreste entfernen und den Boden mit Laub oder Mulch bedecken. Wintergemüse wie Grünkohl, Lauch oder Feldsalat kann stehen bleiben.','Gemüse'],
 ['Beerensträucher schneiden','G',W,12,'Monate',2,'Johannis- und Stachelbeeren im Spätwinter auslichten, Herbsthimbeeren bodennah abschneiden.','Beeren'],
 ['Obstbäume düngen und mulchen','G',W,12,'Monate',3,'Im Frühjahr mit Kompost oder Obstdünger versorgen und die Baumscheibe mulchen.','Obstbäume'],
 ['Mediterrane Kräuter zurückschneiden','G',W,12,'Monate',3,'Salbei, Thymian und Rosmarin im Frühjahr kräftig kürzen, aber nicht ins alte Holz schneiden. Lavendel nach der Blüte.','Kräuter'],
@@ -356,6 +357,12 @@ const KATALOG=[
 ['Kübelpflanzen winterfest machen','G',W,12,'Monate',10,'Vor den ersten Frösten ins Haus holen oder im Freien mit Vlies und Jute einpacken und vor Staunässe schützen.','Allgemein'],
 ['Gartenmöbel winterfest machen','G',W,12,'Monate',10,'Reinigen, gut trocknen lassen und abdecken oder einlagern.','Allgemein'],
 ['Gewächshaus reinigen','G',W,12,'Monate',2,'Im Spätwinter Scheiben und Gestänge reinigen, damit mehr Licht ankommt.','Allgemein'],
+['Handtücher wechseln','H',W,1,'Wochen',0,'Einmal pro Woche wechseln, gern am Waschtag. Handtücher bei 60 Grad waschen.'],
+['Mülleimer reinigen','H',W,1,'Monate',0,'Einmal im Monat ausspülen und gut trocknen lassen, bei Biomüll öfter. Ein Tropfen Spülmittel oder Essigreiniger hilft gegen Gerüche.'],
+['Rauchmelder prüfen','H',W,3,'Monate',0,'Alle 3 Monate den Testknopf drücken. Einmal im Jahr gründlich prüfen und abstauben, spätestens nach 10 Jahren ersetzen.'],
+['Heizung entlüften und Heizkörper abstauben','H',W,12,'Monate',10,'Vor der Heizperiode im Oktober: Heizkörper abstauben und bei gluckernden Heizkörpern entlüften, danach den Wasserdruck der Anlage prüfen.'],
+['Hausapotheke prüfen','H',W,12,'Monate',0,'Einmal im Jahr Ablaufdaten kontrollieren, Abgelaufenes entsorgen und Fehlendes ergänzen.'],
+['Vorhänge waschen','H',W,6,'Monate',0,'Zweimal im Jahr waschen, z. B. im Frühjahr und im Herbst. Pflegeetikett beachten.'],
 ];
 let state={tasks:[],history:[],settings:{garten:false}},gFilter='Alle',hB='Alle',hR='Alle',tab='aufgaben',undoSnap=null,toastTimer=null,editId=null;
 const $=s=>document.querySelector(s);
@@ -497,7 +504,7 @@ function render(){
     $('#gchips').innerHTML=cats.length?'<span class="cl">Kategorie</span>'+chips(['Alle'].concat(cats),gFilter,'gc'):'';
     renderTasks('glist',t=>t.bereich==='Garten'&&(gFilter==='Alle'||t.unter===gFilter),gFilter!=='Alle'?'Keine Aufgaben in dieser Kategorie.':'');
     if(!gt.length)$('#glist').insertAdjacentHTML('beforeend',planBox('garten'));
-    $('#glist').insertAdjacentHTML('beforeend','<p class="hint">Den Gartenbereich kannst du unter „Daten“ ausschalten. <button class="link" data-goto="daten">Zu den Einstellungen</button></p>');
+    $('#glist').insertAdjacentHTML('beforeend','<p class="hint">Den Gartenbereich kannst du unter „Optionen“ ausschalten. <button class="link" data-goto="daten">Zu den Einstellungen</button></p>');
   }
   try{renderHistory();}catch(e){}
   try{renderGantt();}catch(e){}
@@ -584,7 +591,7 @@ $('#jahr').addEventListener('click',e=>{if(e.target.closest('[data-gfreq]')){gan
 document.addEventListener('click',e=>{
   const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno]');if(!c)return;
   if(c.dataset.gon!==undefined){state.settings.garten=true;save();applySettings();render();showTab('garten');toast('Gartenbereich aktiviert',false);return;}
-  if(c.dataset.gno!==undefined){state.settings.gartenFrage=false;save();render();toast('Okay, ich frage nicht mehr. Den Garten findest du jederzeit unter „Daten“.',false);return;}
+  if(c.dataset.gno!==undefined){state.settings.gartenFrage=false;save();render();toast('Okay, ich frage nicht mehr. Den Garten findest du jederzeit unter „Optionen“.',false);return;}
   if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
   if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
   if(c.dataset.plan!==undefined){makePlan(c.dataset.plan);return;}
@@ -597,7 +604,7 @@ document.addEventListener('click',e=>{
 
 let curTipp=null,mvId=null,mvLen=0,mvPA='',mvPB='',pA='',pB='',catSel=null;
 const RAUMLISTE=['Keller','Küche','Bad','Schlafzimmer','Wohnzimmer','Garage','Werkstatt','Schuppen','Flur','Hauseingang','Einfahrt'];
-const RAUMKEY=[['backofen','Küche'],['mikrowelle','Küche'],['airfryer','Küche'],['abzug','Küche'],['kaffeemaschine','Küche'],['milchsystem','Küche'],['wasserkocher','Küche'],['spülmaschine','Küche'],['couch','Wohnzimmer'],['bettwäsche','Schlafzimmer']];
+const RAUMKEY=[['backofen','Küche'],['mikrowelle','Küche'],['airfryer','Küche'],['abzug','Küche'],['kaffeemaschine','Küche'],['milchsystem','Küche'],['wasserkocher','Küche'],['spülmaschine','Küche'],['couch','Wohnzimmer'],['bettwäsche','Schlafzimmer'],['handtüch','Bad']];
 function guessRaum(name){
   const n=String(name||'').toLowerCase();
   const own=[...new Set(state.tasks.map(t=>t.raum).filter(Boolean))].concat(RAUMLISTE);
@@ -615,18 +622,18 @@ function rememberWin(){pA=$('#f-date').value;pB=$('#f-bis').value;}
 function dueExtras(t){
   if(!t.extras||!t.extras.length)return [];
   const next=state.history.filter(h=>h.taskId===t.id).length+1;
-  return t.extras.filter(x=>x.alle>=2&&next%x.alle===0).map(x=>x.text);
+  return t.extras.filter(x=>{const k=x.ab||x.alle;return x.alle>=2&&next>=k&&(next-k)%x.alle===0;}).map(x=>x.text);
 }
-function addExRow(t,n){
-  const d=document.createElement('div');d.className='exrow';
-  d.innerHTML='<input class="ex-t" maxlength="60" placeholder="z. B. Entkalken"><span>jedes</span><input class="ex-n" type="number" min="2" max="99"><span>. Mal</span><button type="button" class="mini mute ex-x" aria-label="Zusatz entfernen">✕</button>';
-  d.querySelector('.ex-t').value=t||'';d.querySelector('.ex-n').value=n||4;
+function addExRow(t,n,k){
+  const d=document.createElement('div');d.className='exitem';
+  d.innerHTML='<div class="exrow"><input class="ex-t" maxlength="60" placeholder="z. B. Entkalken"><button type="button" class="mini mute ex-x" aria-label="Zusatz entfernen">✕</button></div><div class="exrow"><span>jedes</span><input class="ex-n" type="number" min="2" max="99"><span>. Mal, erstmals beim</span><input class="ex-k" type="number" min="1" max="99"><span>. Mal</span></div>';
+  d.querySelector('.ex-t').value=t||'';d.querySelector('.ex-n').value=n||4;d.querySelector('.ex-k').value=k||n||4;
   $('#f-extras').appendChild(d);
 }
-function readEx(){return [...document.querySelectorAll('#f-extras .exrow')].map(r=>({text:r.querySelector('.ex-t').value.trim(),alle:Math.max(2,parseInt(r.querySelector('.ex-n').value,10)||2)})).filter(x=>x.text);}
+function readEx(){return [...document.querySelectorAll('#f-extras .exitem')].map(r=>{const n=Math.max(2,parseInt(r.querySelector('.ex-n').value,10)||2),k=Math.max(1,parseInt(r.querySelector('.ex-k').value,10)||n);return {text:r.querySelector('.ex-t').value.trim(),alle:n,ab:k===n?null:k};}).filter(x=>x.text);}
 function protoTask(i){
   const k=KATALOG[i],o=k[2]===O,win=k[5]?windowFor(k[5]):[null,null];
-  return {name:k[0],bereich:BK[k[1]],unter:k[7]||null,typ:k[2],n:o?null:k[3],einheit:o?null:k[4],faellig:o?null:win[0],bis:o?null:win[1],modus:o?null:(RASTER.includes(k[0])?'raster':'erledigung'),tipp:k[6],extras:(k[8]||[]).map(x=>({text:x[0],alle:x[1]}))};
+  return {name:k[0],bereich:BK[k[1]],unter:k[7]||null,typ:k[2],n:o?null:k[3],einheit:o?null:k[4],faellig:o?null:win[0],bis:o?null:win[1],modus:o?null:(RASTER.includes(k[0])?'raster':'erledigung'),tipp:k[6],extras:(k[8]||[]).map(x=>({text:x[0],alle:x[1],ab:x[2]||null}))};
 }
 function syncForm(){
   const typ=$('#f-typ').value,tm=$('#f-tm').value,ohne=typ==='ohne';
@@ -634,7 +641,7 @@ function syncForm(){
   $('#f-exwrap').style.display=typ==='wiederkehrend'?'':'none';
   const mod=typ==='wiederkehrend'&&tm!=='zeitraum';
   $('#f-modwrap').style.display=$('#f-ivhint').style.display=mod?'':'none';
-  $('#f-ivhint').textContent=$('#f-modus').value==='raster'?'Der nächste Termin richtet sich nach dem bisherigen Termin, auch wenn du früher oder später erledigst (z. B. Wäsche waschen).':'Erledigst du früher oder später, verschiebt sich der nächste Termin entsprechend (z. B. Couch absaugen).';
+  $('#f-ivhint').textContent=$('#f-modus').value==='raster'?'Der nächste Termin richtet sich nach dem bisherigen Termin, auch wenn du früher oder später erledigst.':'Erledigst du früher oder später, verschiebt sich der nächste Termin entsprechend.';
   $('#f-tmwrap').style.display=$('#f-tmhint').style.display=ohne?'none':'';
   $('#f-tmdates').style.display=(ohne||tm==='offen')?'none':'';
   $('#f-biswrap').style.display=tm==='zeitraum'?'':'none';
@@ -661,7 +668,7 @@ function openForm(id,preset,proto){
   $('#f-typ').value=src?src.typ:'wiederkehrend';
   $('#f-n').value=src&&src.n?src.n:1;$('#f-u').value=src&&src.einheit?src.einheit:'Wochen';
   $('#f-modus').value=src&&src.modus?src.modus:'erledigung';
-  $('#f-extras').innerHTML='';((src&&src.extras)||[]).forEach(x=>addExRow(x.text,x.alle));
+  $('#f-extras').innerHTML='';((src&&src.extras)||[]).forEach(x=>addExRow(x.text,x.alle,x.ab));
   $('#f-tm').value=src&&src.bis&&src.faellig?'zeitraum':src&&src.faellig?'datum':'offen';
   $('#f-date').value=src&&src.faellig?src.faellig:'';
   $('#f-bis').value=src&&src.bis?src.bis:'';
@@ -674,7 +681,7 @@ function openForm(id,preset,proto){
 $('#f-typ').onchange=syncForm;
 $('#f-modus').onchange=syncForm;
 $('#f-exadd').onclick=()=>addExRow();
-$('#f-extras').addEventListener('click',e=>{const x=e.target.closest('.ex-x');if(x)x.parentElement.remove();});
+$('#f-extras').addEventListener('click',e=>{const x=e.target.closest('.ex-x');if(x)x.closest('.exitem').remove();});
 $('#f-name').onchange=()=>{if(!$('#f-raum').value&&$('#f-bereich').value!=='Garten')$('#f-raum').value=guessRaum($('#f-name').value);};
 $('#f-date').onchange=()=>{
   const v=$('#f-date').value;
@@ -809,7 +816,7 @@ function makePlan(scope,ok){
     a.forEach((i,j)=>{off[i]=1+Math.floor(j*(+L)/a.length);});
   });
   foll.forEach(i=>{off[i]=off[byName[FOLLOW[nm(i)]]];});
-  const WE=['Backofen reinigen','Küchenabzug saubermachen','Waschmaschine reinigen','Staubsauger reinigen','Hauseingang reinigen','Küchenvorräte überprüfen und aussortieren'],weDay={};
+  const WE=['Küchenabzug saubermachen','Waschmaschine reinigen','Staubsauger reinigen','Hauseingang reinigen','Küchenvorräte überprüfen und aussortieren'],weDay={};
   idx.filter(i=>WE.includes(nm(i))&&off[i]!==undefined).forEach((i,j)=>{weDay[i]=nm(i)==='Küchenvorräte überprüfen und aussortieren'?0:(j%2?0:6);});
   const snap=(x,wd)=>addIv(x,(wd-parse(x).getDay()+7)%7,'Tage'),usedWE=new Set();
   undoSnap=JSON.stringify(state);
@@ -899,7 +906,7 @@ function renderGantt(){
   el.innerHTML=modes+legend+peak+'<div class="gwrap"><div class="ginner">'+head+body+'</div></div>'+note;
 }
 const RKEY='haushalt-remind-v1';
-let hiddenAt=0,remGo='aufgaben';
+let hiddenAt=0;
 function reminderItems(){
   const T=today(),lead=+((state.settings.remind||{}).lead)||0,gOn=!!state.settings.garten;
   const over=[],now=[],soon=[];
@@ -937,7 +944,6 @@ function maybeRemind(force){
   const it=reminderItems();
   if(!(it.over.length+it.now.length+it.soon.length)){if(force)askInfo('Gerade steht nichts an. Alles im Rhythmus.');return;}
   $('#rem-body').innerHTML=remGroup('Überfällig',it.over,'over')+remGroup('Jetzt dran',it.now,'now')+remGroup('Demnächst',it.soon,'soon');
-  remGo=it.over.concat(it.now,it.soon).some(t=>t.bereich!=='Garten')?'aufgaben':'garten';
   try{localStorage.setItem(RKEY,today());}catch(e){}
   $('#rem').showModal();
 }
@@ -1026,8 +1032,7 @@ $('#btn-wipe').onclick=()=>{
   },'Alles löschen'),'Weiter');
 };
 try{if(!localStorage.getItem(WKEY))showWelcome();}catch(e){}
-$('#rem-later').onclick=()=>$('#rem').close();
-$('#rem-go').onclick=()=>{$('#rem').close();showTab(remGo);};
+$('#rem-ok').onclick=()=>$('#rem').close();
 $('#set-rem').onchange=e=>{state.settings.remind.on=e.target.checked;save();};
 $('#set-lead').onchange=e=>{state.settings.remind.lead=+e.target.value;save();};
 $('#set-freq').onchange=e=>{state.settings.remind.freq=e.target.value;save();};
