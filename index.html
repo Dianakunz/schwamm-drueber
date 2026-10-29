@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.6 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.7 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -203,7 +203,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.6 vom 29.10.2026</p>
+      <p class="hint">Version 1.7 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -326,6 +326,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <div id="f-extras"></div>
     <button type="button" id="f-exadd" class="mini">+ Zusatz hinzufügen</button></div>
   <label>Notiz<textarea id="f-note" rows="2" maxlength="300"></textarea></label>
+  <button type="button" id="f-sug" class="link">Als Vorschlag speichern</button>
   <div class="btns">
     <button type="button" id="f-del" class="danger">Löschen</button>
     <button type="button" id="f-cancel">Abbrechen</button>
@@ -362,6 +363,12 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <li><b>Woche:</b> die nächsten 7 Tage, Tag für Tag.</li>
 <li><b>Monat:</b> die nächsten 4 Wochen, Woche für Woche. Wiederholungen sind Prognosen und blass dargestellt.</li>
 <li>Auf jeder Karte steht in kleiner Schrift, wann die Aufgabe zuletzt erledigt wurde.</li>
+</ul>
+<h4>Eigene Vorschläge</h4>
+<ul>
+<li>Beim Bearbeiten einer Aufgabe: „Als Vorschlag speichern“. Sie steht dann in der Vorschlagsliste unter „Eigene“.</li>
+<li>Gemerkt werden Wiederholung, Zusätze, Saison, Wunschwochentag, Raum und Tipp. Ein Zeitraum wird als Monat gemerkt.</li>
+<li>Mit dem ✕ entfernst du einen eigenen Vorschlag wieder.</li>
 </ul>
 <h4>Aufgabe anlegen</h4>
 <ul>
@@ -936,7 +943,7 @@ function bhint(){$('#f-bhint').textContent='Zum Beispiel: '+(BEREICHE[$('#f-bere
 function openForm(id,preset,proto){
   editId=id||null;
   const t=id?state.tasks.find(x=>x.id===id):null;
-  const src=t||(proto!=null?protoTask(proto):null);
+  const src=t||(proto!=null?(typeof proto==='object'?eigenProto(proto):protoTask(proto)):null);
   curTipp=src&&src.tipp?src.tipp:null;
   $('#ftitle').textContent=t?'Aufgabe bearbeiten':'Einstellungen der Aufgabe';
   $('#f-name').value=src?src.name:'';
@@ -946,7 +953,7 @@ function openForm(id,preset,proto){
   $('#gkat').innerHTML=[...new Set(UNTER.concat(state.tasks.map(x=>x.unter).filter(Boolean)))].map(r=>'<option value="'+esc(r)+'">').join('');
   bhint();
   $('#f-tipp').textContent=curTipp?'Tipp: '+curTipp:'';
-  $('#f-raum').value=t?(t.raum||''):(src&&src.bereich!=='Garten'?guessRaum(src.name):'');
+  $('#f-raum').value=t?(t.raum||''):(src&&src.raum?src.raum:(src&&src.bereich!=='Garten'?guessRaum(src.name):''));
   const raeume=[...new Set(state.tasks.map(x=>x.raum).filter(Boolean))];
   $('#raeume').innerHTML=raeume.map(r=>'<option value="'+esc(r)+'">').join('');
   $('#f-typ').value=src?src.typ:'wiederkehrend';
@@ -963,7 +970,7 @@ function openForm(id,preset,proto){
   $('#f-date').value=src&&src.faellig?src.faellig:'';
   $('#f-bis').value=src&&src.bis?src.bis:'';
   $('#f-note').value=t?t.notiz||'':'';
-  $('#f-del').style.display=t?'':'none';
+  $('#f-del').style.display=t?'':'none';$('#f-sug').style.display=t?'':'none';
   $('#f-donewrap').style.display=t?'':'none';$('#f-donedate').value=today();$('#f-donedate').max=today();
   $('#f-cancel').textContent=t?'Abbrechen':'Zurück';
   syncForm();rememberWin();$('#dlg').showModal();
@@ -993,11 +1000,24 @@ $('#f-tm').onchange=()=>{
   if(tm==='zeitraum'&&!$('#f-bis').value)$('#f-bis').value=$('#f-date').value;
   syncForm();rememberWin();
 };
+function eigenProto(e){
+  const w=e.monat?windowFor(e.monat):[null,null];
+  return Object.assign({},e,{faellig:w[0],bis:w[1]});
+}
+$('#f-sug').onclick=()=>{
+  const d=readForm();if(!d.name){askInfo('Bitte zuerst einen Namen eingeben.');return;}
+  const e={name:d.name,bereich:d.bereich,unter:d.unter,raum:d.raum,typ:d.typ,n:d.n,einheit:d.einheit,modus:d.modus,wochentag:d.wochentag,saison:d.saison,extras:d.extras,tipp:curTipp,monat:(d.faellig&&d.bis&&d.bis>=d.faellig)?+d.faellig.slice(5,7):null};
+  const l=(state.settings.eigene||[]).filter(x=>x.name!==e.name);l.push(e);state.settings.eigene=l;save();
+  askInfo('„'+e.name+'“ steht jetzt in der Vorschlagsliste unter „Eigene“.');
+};
 function buildCat(){
   const have=new Set(state.tasks.filter(t=>!t.erledigt).map(t=>t.name));
   const hid=state.settings.hidden||[];
   const q=($('#cat-q').value||'').trim().toLowerCase();
   let h='',nh=0,vis=new Set();
+  const eig=(state.settings.eigene||[]).map((e,i)=>({e,i})).filter(x=>(tab==='garten')===(x.e.bereich==='Garten')&&(!q||x.e.name.toLowerCase().includes(q))).sort((x,y)=>x.e.name.localeCompare(y.e.name,'de'));
+  if(eig.length){h+='<h2>Eigene</h2>';eig.forEach(x=>{const v='e'+x.i;vis.add(v);
+    h+='<div class="cr"><label><input type="radio" name="kat" value="'+v+'"'+(catSel===v?' checked':'')+'><span>'+esc(x.e.name)+'</span>'+(have.has(x.e.name)?'<small style="margin-left:auto">angelegt</small>':'')+'</label><button type="button" class="mini mute" data-del-eigen="'+x.i+'" aria-label="Eigenen Vorschlag entfernen">✕</button></div>';});}
   Object.keys(BEREICHE).filter(b=>tab==='garten'?b==='Garten':b!=='Garten').forEach(b=>{
     const all=KATALOG.map((k,i)=>({k,i})).filter(x=>BK[x.k[1]]===b);
     nh+=all.filter(x=>hid.includes(x.k[0])).length;
@@ -1021,14 +1041,15 @@ $('#cat-own').onclick=()=>{$('#cat').close();openForm(null,tab==='garten'?'Garte
 $('#cat-list').addEventListener('change',e=>{catSel=e.target.value;$('#cat-add').disabled=false;});
 $('#cat-q').oninput=buildCat;
 $('#cat-list').addEventListener('click',e=>{
-  const h=e.target.closest('[data-hide]'),u=e.target.closest('[data-unhide]');
-  if(h){state.settings.hidden=(state.settings.hidden||[]).concat(KATALOG[+h.dataset.hide][0]);save();buildCat();}
+  const h=e.target.closest('[data-hide]'),u=e.target.closest('[data-unhide]'),de=e.target.closest('[data-del-eigen]');
+  if(de){const l=state.settings.eigene||[];l.splice(+de.dataset.delEigen,1);state.settings.eigene=l;save();buildCat();}
+  else if(h){state.settings.hidden=(state.settings.hidden||[]).concat(KATALOG[+h.dataset.hide][0]);save();buildCat();}
   else if(u){state.settings.hidden=[];save();buildCat();}
 });
 $('#cat-close').onclick=()=>$('#cat').close();
 $('#cat-add').onclick=()=>{
   const r=document.querySelector('#cat-list input:checked');if(!r)return;
-  $('#cat').close();openForm(null,tab==='garten'?'Garten':null,+r.value);
+  $('#cat').close();openForm(null,tab==='garten'?'Garten':null,r.value[0]==='e'?state.settings.eigene[+r.value.slice(1)]:+r.value);
 };
 $('#f-cancel').onclick=()=>{$('#dlg').close();if(!editId)openCat();};
 $('#f-del').onclick=()=>{
@@ -1037,8 +1058,7 @@ $('#f-del').onclick=()=>{
     state.tasks=state.tasks.filter(x=>x.id!==editId);save();render();$('#dlg').close();
   },'Löschen');
 };
-$('#frm').onsubmit=e=>{
-  e.preventDefault();
+function readForm(){
   const typ=$('#f-typ').value,tm=$('#f-tm').value;
   const data={
     name:$('#f-name').value.trim(),bereich:$('#f-bereich').value,unter:$('#f-bereich').value==='Garten'?($('#f-unter').value.trim()||null):null,raum:$('#f-raum').value.trim(),
@@ -1052,6 +1072,11 @@ $('#frm').onsubmit=e=>{
     faellig:(typ==='ohne'||tm==='offen')?null:($('#f-date').value||null),
     bis:(typ==='ohne'||tm!=='zeitraum')?null:($('#f-bis').value||null)
   };
+  return data;
+}
+$('#frm').onsubmit=e=>{
+  e.preventDefault();
+  const data=readForm();
   if(!data.name)return;
   if(!data.faellig||(data.bis&&data.bis<data.faellig))data.bis=null;
   if(data.saison&&data.faellig&&!data.bis&&!inSeason(data,data.faellig))data.faellig=seasonStart(data,data.faellig);
