@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.8 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.8.1 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -203,7 +203,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.8 vom 29.10.2026</p>
+      <p class="hint">Version 1.8.1 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -258,6 +258,14 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <label>Name (optional)<input id="ab-name" maxlength="40" placeholder="z. B. Urlaub"></label>
   <div class="btns"><button type="button" id="ab-cancel">Abbrechen</button><button class="primary">Speichern</button></div>
 </form></dialog>
+<dialog id="ics"><h3 tabindex="-1" autofocus>In den Kalender übertragen</h3>
+  <p class="hint">Wähle den Zeitraum und die Aufgaben. Aufgaben, die alle 2 Wochen oder öfter anstehen, sind zunächst nicht angehakt.</p>
+  <label for="ics-per">Zeitraum</label>
+  <select id="ics-per"><option value="gezeigt">Wie in der Jahresübersicht gezeigt</option><option value="m1">Nächster Monat</option><option value="m3">Nächste 3 Monate</option></select>
+  <p class="hint"><button type="button" class="link" data-icsel="rare">Nur seltene</button> · <button type="button" class="link" data-icsel="all">Alle</button> · <button type="button" class="link" data-icsel="none">Keine</button></p>
+  <div id="ics-list" class="cat"></div>
+  <div class="btns"><button type="button" id="ics-no">Abbrechen</button><button type="button" class="primary" id="ics-ok">Übertragen</button></div>
+</dialog>
 <dialog id="xd"><h3 id="xd-title" tabindex="-1" autofocus>Erledigt</h3>
   <p class="hint">Welche Zusätze hast du diesmal erledigt? Was du abwählst, kommt beim nächsten Mal wieder dran.</p>
   <div id="xd-list"></div>
@@ -372,7 +380,8 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 </ul>
 <h4>In den Kalender übertragen</h4>
 <ul>
-<li>Im Reiter „Jahr“ unter der Übersicht: „In den Kalender übertragen“. Es entsteht eine Datei (.ics) mit allen Terminen des gezeigten Zeitraums.</li>
+<li>Im Reiter „Jahr“ unter der Übersicht: „In den Kalender übertragen“. Du wählst den Zeitraum (wie gezeigt, nächster Monat, nächste 3 Monate) und die Aufgaben. Aufgaben, die alle 2 Wochen oder öfter anstehen, sind zunächst nicht angehakt; mit „Nur seltene“, „Alle“ und „Keine“ geht die Auswahl schnell.</li>
+<li>Es entsteht eine Datei (.ics) mit den gewählten Terminen.</li>
 <li>Datei öffnen, dann fragt dein Kalender (Google, Apple, Outlook), ob er die Termine übernehmen soll.</li>
 <li>Ganztägige Termine, Zeiträume als mehrtägiger Termin, regelmäßige Aufgaben (alle 2 Wochen oder öfter) als Wiederholung. Geplante Wiederholungen sind enthalten.</li>
 <li>Es ist ein Schnappschuss: Änderungen in der App gelangen nicht automatisch in den Kalender. Wer die Datei zweimal übernimmt, hat die Termine doppelt.</li>
@@ -884,7 +893,7 @@ document.addEventListener('click',e=>{
   if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
   if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
   if(c.dataset.sicht!==undefined){state.settings.sicht=c.dataset.sicht;save();render();return;}
-  if(c.dataset.ics!==undefined){exportIcs();return;}
+  if(c.dataset.ics!==undefined){openIcs();return;}
   if(c.dataset.absnew!==undefined){openAbs();return;}
   if(c.dataset.abshift!==undefined){const a=absList().find(x=>x.id===c.dataset.abshift);if(a)shiftClash(a);return;}
   if(c.dataset.absdel!==undefined){undoSnap=JSON.stringify(state);state.settings.abwesend=absList().filter(x=>x.id!==c.dataset.absdel);save();render();toast('Abwesenheit entfernt',true);return;}
@@ -1055,6 +1064,14 @@ $('#cat-list').addEventListener('click',e=>{
   else if(u){state.settings.hidden=[];save();buildCat();}
 });
 $('#cat-close').onclick=()=>$('#cat').close();
+$('#ics-no').onclick=()=>$('#ics').close();
+$('#ics-ok').onclick=()=>{
+  const ids=[...document.querySelectorAll('#ics-list input:checked')].map(i=>i.dataset.t);
+  if(!ids.length){askInfo('Bitte mindestens eine Aufgabe auswählen.');return;}
+  exportIcs($('#ics-per').value,ids);
+};
+$('#ics').addEventListener('click',e=>{const b=e.target.closest('[data-icsel]');if(!b)return;
+  document.querySelectorAll('#ics-list input').forEach(i=>{i.checked=b.dataset.icsel==='all'||(b.dataset.icsel==='rare'&&i.dataset.freq==='0');});});
 $('#cat-add').onclick=()=>{
   const r=document.querySelector('#cat-list input:checked');if(!r)return;
   $('#cat').close();openForm(null,tab==='garten'?'Garten':null,r.value[0]==='e'?state.settings.eigene[+r.value.slice(1)]:+r.value);
@@ -1214,19 +1231,33 @@ function occurrences(t,start,endEx){
   }
   return out;
 }
-function exportIcs(){
-  const T=today(),td=parse(T),gm=state.settings.gantt||'rolling';
+const perOf=t=>t.typ==='wiederkehrend'&&t.n?t.n*(t.einheit==='Tage'?1:t.einheit==='Wochen'?7:30):0;
+const icsTasks=()=>state.tasks.filter(t=>!t.erledigt&&t.typ!=='ohne'&&t.faellig&&(state.settings.garten||t.bereich!=='Garten'));
+function icsRange(m){
+  const T=today(),td=parse(T);
+  if(m==='m1'||m==='m3'){const e=new Date(td.getFullYear(),td.getMonth()+(m==='m1'?1:3),td.getDate());return {start:T,endEx:iso(e),lastIncl:iso(new Date(e.getFullYear(),e.getMonth(),e.getDate()-1))};}
+  const gm=state.settings.gantt||'rolling';
   const sd=gm==='this'?new Date(td.getFullYear(),0,1):gm==='next'?new Date(td.getFullYear()+1,0,1):new Date(td.getFullYear(),td.getMonth(),1);
-  const start=iso(sd),endEx=iso(new Date(sd.getFullYear(),sd.getMonth()+12,1)),lastIncl=iso(new Date(sd.getFullYear(),sd.getMonth()+12,0));
-  const gOn=!!state.settings.garten;
+  return {start:iso(sd),endEx:iso(new Date(sd.getFullYear(),sd.getMonth()+12,1)),lastIncl:iso(new Date(sd.getFullYear(),sd.getMonth()+12,0))};
+}
+function openIcs(){
+  const l=icsTasks().sort((x,y)=>x.name.localeCompare(y.name,'de'));
+  if(!l.length){askInfo('Es gibt noch keine Aufgaben mit Termin.');return;}
+  $('#ics-per').value='gezeigt';
+  $('#ics-list').innerHTML=l.map(t=>{const p=perOf(t);
+    return '<label><input type="checkbox" data-t="'+t.id+'" data-freq="'+(p&&p<=14?1:0)+'"'+(p&&p<=14?'':' checked')+'><span>'+esc(iconFor(t))+' '+esc(t.name)+'<small>'+esc(t.typ==='wiederkehrend'?'alle '+t.n+' '+t.einheit:'einmalig')+'</small></span></label>';}).join('');
+  $('#ics').showModal();
+}
+function exportIcs(per,ids){
+  const R=icsRange(per),start=R.start,endEx=R.endEx,lastIncl=R.lastIncl;
   const d8=x=>x.replace(/-/g,''),nx=x=>{const d=parse(x);return d8(iso(new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)));};
   const esc2=x=>String(x||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
   const fold=l=>{const o=[];let cur='',len=0;for(const ch of l){const b=new TextEncoder().encode(ch).length;if(len+b>73){o.push(cur);cur=' '+ch;len=1+b;}else{cur+=ch;len+=b;}}o.push(cur);return o.join('\r\n');};
   const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
   const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Schwamm drüber//DE','CALSCALE:GREGORIAN','X-WR-CALNAME:Schwamm drüber'];
   let n=0;
-  state.tasks.filter(t=>!t.erledigt&&t.typ!=='ohne'&&t.faellig&&(gOn||t.bereich!=='Garten')).forEach(t=>{
-    const per=t.typ==='wiederkehrend'&&t.n?t.n*(t.einheit==='Tage'?1:t.einheit==='Wochen'?7:30):0;
+  icsTasks().filter(t=>ids.includes(t.id)).forEach(t=>{
+    const per=perOf(t);
     const desc=[t.raum?'Raum: '+t.raum:'',t.notiz||'',t.tipp?'Tipp: '+t.tipp:'',(t.extras||[]).length?'Zusätze: '+t.extras.map(x=>x.text).join(', '):''].filter(Boolean).join('\n');
     const add=(a,b,rr,i)=>{
       n++;
@@ -1243,11 +1274,11 @@ function exportIcs(){
     occ.forEach((o,i)=>add(o.a,o.b,null,i));
   });
   L.push('END:VCALENDAR');
-  if(!n){askInfo('Im gewählten Zeitraum gibt es keine Aufgaben mit Termin.');return;}
+  if(!n){askInfo('Für diese Auswahl gibt es im Zeitraum keine Termine.');return;}
   const b=new Blob([L.join('\r\n')+'\r\n'],{type:'text/calendar'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='schwamm-drueber-'+today()+'.ics';a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  toast(n+(n===1?' Termin':' Termine')+' für den Kalender erstellt',false);
+  $('#ics').close();toast(n+(n===1?' Termin':' Termine')+' für den Kalender erstellt',false);
 }
 function renderGantt(){
   const el=$('#jahr');
