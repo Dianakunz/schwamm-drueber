@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.4 vom 28.10.2026 -->
+<!-- Schwamm drüber, Version 1.5 vom 28.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -172,39 +172,57 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
 .card.rest{opacity:.6;border-left-color:var(--line)}
 .gabs{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--muted) 22%,transparent);pointer-events:none}
 .gbar{z-index:1}
+#help{max-height:88vh;overflow:auto}
+#help h4{margin:14px 0 4px;font-size:1rem}
+#help ul{margin:0;padding-left:20px}
+#help li{margin:3px 0;font-size:.95rem}
+.helpbtn{margin-left:auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--accent);font-weight:700;font-size:1.1rem}
+details.opt{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:0 14px 8px}
+details.opt>summary{padding:14px 0 8px;font-weight:700;cursor:pointer;list-style:none}
+details.opt>summary::-webkit-details-marker{display:none}
+details.opt>summary::after{content:"\25BE";float:right;color:var(--muted)}
+details.opt[open]>summary::after{content:"\25B4"}
+details.opt h4{margin:16px 0 2px;font-size:.95rem}
 </style>
 </head>
 <body>
-<header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1></header>
+<header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1><button id="btn-help" class="helpbtn" aria-label="Anleitung">?</button></header>
 <main>
   <section id="aufgaben" class="panel on"><div id="gbanner"></div><div id="hchips" class="chips"></div><div id="hrooms" class="chips"></div><div id="hlist"></div></section>
   <section id="historie" class="panel"></section>
   <section id="garten" class="panel"><div id="gchips" class="chips"></div><div id="glist"></div></section>
   <section id="jahr" class="panel"></section>
   <section id="daten" class="panel data">
-    <h2>Einstellungen</h2>
-    <label class="chk"><input type="checkbox" id="set-garten">Gartenbereich aktivieren</label>
-    <p class="hint">Zeigt einen eigenen Reiter „Garten“ für Rasen, Hecken, Obstbäume und mehr. Schon angelegte Garten-Aufgaben bleiben gespeichert, wenn du den Bereich wieder ausschaltest.</p>
-    <h2>Erinnerungen</h2>
-    <label class="chk"><input type="checkbox" id="set-rem">Hinweis beim Öffnen der App anzeigen</label>
-    <label>Auch anzeigen, was bald fällig wird<select id="set-lead"><option value="0">Nur Heutiges und Überfälliges</option><option value="1">Plus die nächsten 1 Tag</option><option value="3">Plus die nächsten 3 Tage</option><option value="7">Plus die nächsten 7 Tage</option></select></label>
-    <label>Wie oft<select id="set-freq"><option value="tag">Höchstens einmal pro Tag</option><option value="immer">Bei jedem Öffnen</option></select></label>
-    <button id="btn-rem">Hinweis jetzt ansehen</button>
-    <p class="hint">Die App kann dich nur erinnern, wenn du sie öffnest. Mitteilungen auf dem gesperrten Handy gibt es nicht.</p>
-    <h2>Abwesenheit</h2>
-    <div id="abs-list"></div>
-    <button id="btn-abs">Abwesenheit hinzufügen</button>
-    <p class="hint">Während einer Abwesenheit, z. B. im Urlaub, rutschen Termine auf den ersten Tag danach, und es gibt keinen Erinnerungs-Hinweis. Im Reiter Jahr ist sie als graues Band zu sehen.</p>
-    <h2>Daten sichern</h2>
-    <p class="hint">Alle Aufgaben und die Historie werden nur in diesem Browser auf diesem Gerät gespeichert. Mit einer Sicherung kannst du sie aufbewahren oder auf ein anderes Gerät übertragen.</p>
-    <button id="btn-export">Sicherung speichern</button>
-    <button id="btn-import">Sicherung laden</button>
-    <input id="file-import" type="file" accept="application/json,.json" hidden>
-    <button id="btn-welcome">Startseite ansehen</button>
-    <h2>Zurücksetzen</h2>
-    <button id="btn-wipe" class="danger">Alle Daten löschen</button>
-    <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
-    <p class="hint">Version 1.4 vom 28.10.2026</p>
+    <details class="opt"><summary>Anleitung und Hilfe</summary>
+      <button id="btn-help2">Anleitung lesen</button>
+      <button id="btn-welcome">Startseite ansehen</button>
+      <p class="hint">Version 1.5 vom 28.10.2026</p>
+    </details>
+    <details class="opt"><summary>Garten und Erinnerungen</summary>
+      <h4>Garten</h4>
+      <label class="chk"><input type="checkbox" id="set-garten">Gartenbereich aktivieren</label>
+      <p class="hint">Zeigt einen eigenen Reiter „Garten“ für Rasen, Hecken, Obstbäume und mehr. Schon angelegte Garten-Aufgaben bleiben gespeichert, wenn du den Bereich wieder ausschaltest.</p>
+      <h4>Erinnerungen</h4>
+      <label class="chk"><input type="checkbox" id="set-rem">Hinweis beim Öffnen der App anzeigen</label>
+      <label>Auch anzeigen, was bald fällig wird<select id="set-lead"><option value="0">Nur Heutiges und Überfälliges</option><option value="1">Plus die nächsten 1 Tag</option><option value="3">Plus die nächsten 3 Tage</option><option value="7">Plus die nächsten 7 Tage</option></select></label>
+      <label>Wie oft<select id="set-freq"><option value="tag">Höchstens einmal pro Tag</option><option value="immer">Bei jedem Öffnen</option></select></label>
+      <button id="btn-rem">Hinweis jetzt ansehen</button>
+      <p class="hint">Die App kann dich nur erinnern, wenn du sie öffnest. Mitteilungen auf dem gesperrten Handy gibt es nicht.</p>
+    </details>
+    <details class="opt"><summary>Abwesenheit (Urlaub)</summary>
+      <div id="abs-list"></div>
+      <button id="btn-abs">Abwesenheit hinzufügen</button>
+      <p class="hint">Während einer Abwesenheit, z. B. im Urlaub, rutschen Termine auf den ersten Tag danach, und es gibt keinen Erinnerungs-Hinweis. Im Reiter Jahr ist sie als graues Band zu sehen.</p>
+    </details>
+    <details class="opt"><summary>Daten sichern und zurücksetzen</summary>
+      <p class="hint">Alle Aufgaben und die Historie werden nur in diesem Browser auf diesem Gerät gespeichert. Mit einer Sicherung kannst du sie aufbewahren oder auf ein anderes Gerät übertragen.</p>
+      <button id="btn-export">Sicherung speichern</button>
+      <button id="btn-import">Sicherung laden</button>
+      <input id="file-import" type="file" accept="application/json,.json" hidden>
+      <h4>Zurücksetzen</h4>
+      <button id="btn-wipe" class="danger">Alle Daten löschen</button>
+      <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
+    </details>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
@@ -233,6 +251,12 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
   <label>Name (optional)<input id="ab-name" maxlength="40" placeholder="z. B. Urlaub"></label>
   <div class="btns"><button type="button" id="ab-cancel">Abbrechen</button><button class="primary">Speichern</button></div>
 </form></dialog>
+<dialog id="xd"><h3 id="xd-title" tabindex="-1" autofocus>Erledigt</h3>
+  <p class="hint">Welche Zusätze hast du diesmal erledigt? Was du abwählst, kommt beim nächsten Mal wieder dran.</p>
+  <div id="xd-list"></div>
+  <div class="btns"><button type="button" id="xd-no">Abbrechen</button><button type="button" class="primary" id="xd-ok">Erledigt</button></div>
+</dialog>
+<dialog id="help"><h3 tabindex="-1" autofocus>Anleitung</h3><div id="help-body"></div><div class="btns"><button type="button" class="primary" id="help-ok">Schließen</button></div></dialog>
 <dialog id="ask"><p id="ask-msg"></p><div class="btns"><button type="button" id="ask-no">Abbrechen</button><button type="button" class="primary" id="ask-yes">OK</button></div></dialog>
 <dialog id="he"><form id="hef">
   <h3 id="he-title" tabindex="-1" autofocus>Erledigt-Eintrag</h3>
@@ -246,6 +270,7 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
   <p class="wsub" style="margin-bottom:6px">Einmal eingetragen, nie mehr vergessen</p>
   <p class="wsub2">Haus und Garten im Rhythmus</p>
   <button id="w-go">Jetzt loslegen</button>
+  <button class="link" id="w-help" style="display:block;margin:0 auto 14px">Kurzanleitung ansehen</button>
   <p class="hint">Deine Daten bleiben auf diesem Gerät. Eine Sicherung findest du unter „Optionen“.</p>
 </div></div>
 <div id="toast"><span id="toast-text"></span><button id="toast-undo">Rückgängig</button></div>
@@ -316,6 +341,57 @@ const BK={H:'Im Haus',K:'Keller und Nebengebäude',R:'Rund ums Haus',G:'Garten'}
 const UNTER=['Rasen','Hecken','Obstbäume','Beeren','Gemüse','Kräuter','Bäume und Sträucher','Allgemein'];
 const RASTER=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln'];
 const WKEY='haushalt-welcome-v1';
+const HELP_HTML=`<h4>Die Reiter</h4>
+<ul>
+<li><b>Haus:</b> alle Aufgaben für Wohnung, Keller und Haus außen. Oben filterst du nach Bereich und Raum.</li>
+<li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen). Filter nach Kategorie.</li>
+<li><b>Jahr:</b> Übersicht über die nächsten 12 Monate oder ein Kalenderjahr, Haus und Garten in zwei Farben.</li>
+<li><b>Historie:</b> was du erledigt hast, mit Diagrammen.</li>
+<li><b>Optionen:</b> Anleitung, Garten, Erinnerungen, Abwesenheit, Sicherung.</li>
+</ul>
+<h4>Aufgabe anlegen</h4>
+<ul>
+<li>Auf das Plus tippen, eine Aufgabe aus der Vorschlagsliste wählen (mit Suchfeld) und „Weiter“. Wiederholung und Termin sind Vorschläge und lassen sich ändern. Mit ✕ blendest du Vorschläge aus, die du nicht brauchst.</li>
+<li>„Eigene Aufgabe“ legt eine Aufgabe ohne Vorschlag an.</li>
+<li>Ist ein Reiter noch leer, legt „Beispielplan erstellen“ ein Grundpaket typischer Aufgaben an.</li>
+</ul>
+<h4>Abhaken</h4>
+<ul>
+<li>„Erledigt“ trägt die Aufgabe heute ein und berechnet den nächsten Termin. Mit „Rückgängig“ unten nimmst du es sofort zurück.</li>
+<li>Bei seltenen Aufgaben, die viel zu früh abgehakt werden, fragt die App nach.</li>
+<li>Hat die Aufgabe einen fälligen Zusatz, wählst du aus, was du gemacht hast. Was du abwählst, kommt beim nächsten Mal wieder.</li>
+<li>Vergessen abzuhaken: unter „Bearbeiten“ steht „Als erledigt eintragen“ mit Datum. In der Historie korrigierst du ein Datum oder löschst einen Eintrag, die Aufgabe wird dann wiederhergestellt.</li>
+</ul>
+<h4>Termine und Wiederholung</h4>
+<ul>
+<li><b>Termin:</b> festes Datum, Zeitraum (z. B. ganzer April, erst nach dem Ende überfällig) oder noch nicht festlegen (der Termin entsteht beim ersten Erledigen).</li>
+<li><b>Art:</b> wiederkehrend, einmalig oder ohne Termin (nur dokumentieren, z. B. Rasen mähen).</li>
+<li><b>Nächster Termin:</b> ab dem Erledigungstag oder nach festem Rhythmus.</li>
+<li><b>Bevorzugter Wochentag:</b> der nächste Termin rutscht auf den nächstgelegenen passenden Tag.</li>
+<li><b>Saison:</b> außerhalb der Saison ruht die Aufgabe (ganz unten in der Liste).</li>
+<li><b>Zusätze:</b> Arbeiten, die nur bei jedem x-ten Mal anfallen, z. B. Entkalken bei der Reinigung einer Kaffeemaschine. Mit „erstmals beim“ legst du mehrere im Wechsel.</li>
+</ul>
+<h4>Verschieben und Bearbeiten</h4>
+<ul>
+<li>„Verschieben“ (oder Tippen auf einen Balken im Reiter Jahr): nur dieses Mal oder mit dem Rhythmus.</li>
+<li>„Diesmal auslassen“ überspringt einen Termin, ohne ihn als erledigt zu zählen.</li>
+<li>„Bearbeiten“ ändert alle Einstellungen einer Aufgabe und löscht sie.</li>
+</ul>
+<h4>Jahr und Historie</h4>
+<ul>
+<li>Im Reiter Jahr stellst du oben den Zeitraum um. Dunkle Balken sind aktuelle Termine, helle geplante Wiederholungen, rote überfällige. „Regelmäßig“ fasst häufige Aufgaben zusammen.</li>
+<li>In der Historie stellst du den Zeitraum der Diagramme um.</li>
+</ul>
+<h4>Erinnerungen und Abwesenheit</h4>
+<ul>
+<li>Beim Öffnen zeigt ein Fenster, was überfällig, heute dran oder bald fällig ist. Einstellbar unter Optionen. Mitteilungen auf dem gesperrten Handy gibt es nicht.</li>
+<li>Eine Abwesenheit (Urlaub) trägst du unter Optionen oder im Reiter Jahr ein: Termine rutschen auf danach, und es gibt keine Erinnerungen.</li>
+</ul>
+<h4>Daten und Sicherung</h4>
+<ul>
+<li>Alle Daten liegen nur in diesem Browser auf diesem Gerät. Sichere sie regelmäßig unter Optionen und lade die Sicherung bei Bedarf wieder.</li>
+<li>Tipp fürs Handy: Im Browsermenü „Zum Startbildschirm hinzufügen“, dann öffnet sich die App wie eine normale App.</li>
+</ul>`;
 const LOGO='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true"><g transform="rotate(-10 60 62)"><rect x="14" y="32" width="92" height="58" rx="14" fill="#f2c230"/><path d="M14 72H106V76A14 14 0 0 1 92 90H28A14 14 0 0 1 14 76Z" fill="#2e9d6f"/><ellipse cx="36" cy="50" rx="6" ry="4.5" fill="#d6a21a"/><ellipse cx="64" cy="46" rx="7" ry="5" fill="#d6a21a"/><ellipse cx="88" cy="56" rx="5" ry="4" fill="#d6a21a"/><ellipse cx="52" cy="62" rx="4.5" ry="3.5" fill="#d6a21a"/></g><circle cx="98" cy="24" r="10" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/><circle cx="114" cy="44" r="5" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/><circle cx="80" cy="12" r="5" fill="#d7f0ee" stroke="#1f6f66" stroke-width="3"/></svg>';
 const GRUND=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln','Handtücher wechseln','Mülleimer reinigen','Blumen gießen','Lichtschalter und Türgriffe desinfizieren','Couch absaugen','Spülmaschine reinigen','Waschmaschine reinigen','Küchenabzug saubermachen','Staubsauger reinigen','Wasserkocher entkalken','Küchenvorräte überprüfen und aussortieren','Fenster putzen','Hauseingang reinigen','Rasen mähen','Rasen düngen','Bäume und Sträucher schneiden','Gartenmöbel winterfest machen','Wasserleitungen im Garten winterfest machen','Gartengeräte reinigen und pflegen'];
 const ALT={'Wohnbereich':'Im Haus','Haus außen':'Rund ums Haus','Außenanlagen':'Garten'};
@@ -659,19 +735,30 @@ function earlyDays(t){
   const d=diff(today(),t.faellig);
   return d>Math.max(7,Math.round(per*0.2))?d:0;
 }
-function recordDone(t,d){
+function recordDone(t,d,only){
   undoSnap=JSON.stringify(state);
-  const ex=dueExtras(t),prev={faellig:t.faellig||null,bis:t.bis||null,orig:t.orig||null,erledigt:!!t.erledigt};
-  state.history.push({id:uid(),taskId:t.id,name:t.name,icon:t.icon,bereich:t.bereich,datum:d,extra:ex.join(', '),prev:prev});
+  const ex=dueExtras(t),done=only?ex.filter(x=>only.includes(x)):ex,skip=ex.filter(x=>!done.includes(x));
+  const prev={faellig:t.faellig||null,bis:t.bis||null,orig:t.orig||null,erledigt:!!t.erledigt,nachholen:t.nachholen||[]};
+  state.history.push({id:uid(),taskId:t.id,name:t.name,icon:t.icon,bereich:t.bereich,datum:d,extra:done.join(', '),skip:skip,prev:prev});
   finishTask(t,d);
+  t.nachholen=skip;
   save();render();
-  toast('„'+t.name+'“ erledigt'+(d!==today()?' am '+fmt(d):'')+(ex.length?' (mit '+ex.join(', ')+')':''),true);
+  toast('„'+t.name+'“ erledigt'+(d!==today()?' am '+fmt(d):'')+(done.length?' (mit '+done.join(', ')+')':'')+(skip.length?', '+skip.join(', ')+' kommt wieder':''),true);
+}
+let xdT=null,xdD=null,xdEx=[];
+function startDone(t,d){
+  const ex=dueExtras(t);
+  if(!ex.length){recordDone(t,d);return;}
+  xdT=t;xdD=d;xdEx=ex;
+  $('#xd-title').textContent='Erledigt: '+t.name;
+  $('#xd-list').innerHTML=ex.map((x,i)=>'<label class="chk"><input type="checkbox" checked data-x="'+i+'">'+esc(x)+'</label>').join('');
+  $('#xd').showModal();
 }
 function markDone(id){
   const t=state.tasks.find(x=>x.id===id);if(!t)return;
   const e=earlyDays(t);
-  if(e>0){askConfirm('„'+t.name+'“ ist erst am '+fmt(t.faellig)+' fällig (in '+e+' Tagen). Wirklich schon jetzt als erledigt eintragen?',()=>recordDone(t,today()),'Ja, erledigt');return;}
-  recordDone(t,today());
+  if(e>0){askConfirm('„'+t.name+'“ ist erst am '+fmt(t.faellig)+' fällig (in '+e+' Tagen). Wirklich schon jetzt als erledigt eintragen?',()=>startDone(t,today()),'Ja, erledigt');return;}
+  startDone(t,today());
 }
 function isLatest(e){const same=state.history.filter(h=>h.taskId===e.taskId);return same.length>0&&same[same.length-1].id===e.id;}
 function restoreTask(e){
@@ -679,6 +766,7 @@ function restoreTask(e){
   if(!t||!e.prev)return null;
   t.faellig=e.prev.faellig;t.bis=e.prev.bis;t.erledigt=!!e.prev.erledigt;
   if(e.prev.orig)t.orig=e.prev.orig;else delete t.orig;
+  t.nachholen=e.prev.nachholen||[];
   return t;
 }
 let heId=null;
@@ -703,11 +791,12 @@ $('#aufgaben').addEventListener('click',onTaskClick);
 $('#glist').addEventListener('click',onTaskClick);
 $('#jahr').addEventListener('click',e=>{if(e.target.closest('[data-gfreq]')){ganttFreq=!ganttFreq;renderGantt();return;}onTaskClick(e);});
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel]');if(!c)return;
+  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew]');if(!c)return;
   if(c.dataset.gon!==undefined){state.settings.garten=true;save();applySettings();render();showTab('garten');toast('Gartenbereich aktiviert',false);return;}
   if(c.dataset.gno!==undefined){state.settings.gartenFrage=false;save();render();toast('Okay, ich frage nicht mehr. Den Garten findest du jederzeit unter „Optionen“.',false);return;}
   if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
   if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
+  if(c.dataset.absnew!==undefined){openAbs();return;}
   if(c.dataset.abshift!==undefined){const a=absList().find(x=>x.id===c.dataset.abshift);if(a)shiftClash(a);return;}
   if(c.dataset.absdel!==undefined){undoSnap=JSON.stringify(state);state.settings.abwesend=absList().filter(x=>x.id!==c.dataset.absdel);save();render();toast('Abwesenheit entfernt',true);return;}
   if(c.dataset.plan!==undefined){makePlan(c.dataset.plan);return;}
@@ -736,9 +825,12 @@ function keepWin(a,b,na){
 }
 function rememberWin(){pA=$('#f-date').value;pB=$('#f-bis').value;}
 function dueExtras(t){
-  if(!t.extras||!t.extras.length)return [];
-  const next=state.history.filter(h=>h.taskId===t.id).length+1;
-  return t.extras.filter(x=>{const k=x.ab||x.alle;return x.alle>=2&&next>=k&&(next-k)%x.alle===0;}).map(x=>x.text);
+  let base=[];
+  if(t.extras&&t.extras.length){
+    const next=state.history.filter(h=>h.taskId===t.id).length+1;
+    base=t.extras.filter(x=>{const k=x.ab||x.alle;return x.alle>=2&&next>=k&&(next-k)%x.alle===0;}).map(x=>x.text);
+  }
+  return base.concat((t.nachholen||[]).filter(x=>!base.includes(x)));
 }
 function addExRow(t,n,k){
   const d=document.createElement('div');d.className='exitem';
@@ -1072,12 +1164,13 @@ function renderGantt(){
   const mx=Math.max.apply(null,cnt);
   head+='<div class="grow ghead"><div class="glabel">Aufgaben im Monat</div><div class="gtrack">'+cnt.map(c=>'<div class="gm gl'+(mx?Math.ceil(c/mx*4):0)+'">'+(c||'')+'</div>').join('')+'</div></div>';
   const modes='<div class="chips">'+[['rolling','Nächste 12 Monate'],['this','Dieses Jahr'],['next','Nächstes Jahr']].map(m=>'<button class="chip'+(gm===m[0]?' on':'')+'" data-gmode="'+m[0]+'">'+m[1]+'</button>').join('')+'</div>';
+  const absLink='<p class="hint" style="margin:8px 0 0"><button class="link" data-absnew="1">Abwesenheit eintragen</button></p>';
   const clashHtml=absList().map(a=>{const n=clashTasks(a).length;return n?'<div class="banner"><b>'+n+(n===1?' Aufgabe liegt':' Aufgaben liegen')+' in deiner Abwesenheit ('+fmt(a.von).slice(0,6)+' bis '+fmt(a.bis).slice(0,6)+')</b><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-abshift="'+a.id+'">Auf danach verschieben</button></div></div>':'';}).join('');
   const legend='<div class="glegend"><span><i style="background:var(--accent)"></i>Haus</span>'+(gOn?'<span><i style="background:var(--garten)"></i>Garten</span>':'')+'<span><i style="background:var(--late)"></i>überfällig</span>'+(absList().some(a=>a.bis>=start&&a.von<=lastIncl)?'<span><i style="background:color-mix(in srgb,var(--muted) 35%,transparent)"></i>Abwesenheit</span>':'')+'<span>helle Balken: geplante Wiederholungen</span></div>';
   const peak=mx?'<p class="hint" style="margin:8px 0 0">Am meisten zu tun: '+MONL[(sd.getMonth()+cnt.indexOf(mx))%12]+' ('+mx+' '+(mx===1?'Aufgabe':'Aufgaben')+').</p>':'';
   const note='<p class="hint">Die Übersicht zeigt nicht alles: Aufgaben ohne Termin ('+nots+' aktuell) fehlen, und regelmäßige Aufgaben (alle 2 Wochen oder öfter) erscheinen nur als ein Block. Tippe auf einen Balken, um die Aufgabe zu verschieben.</p>';
   if(!rows.length&&!freq.length){el.innerHTML=modes+'<p class="empty">Noch nichts zu zeigen. Sobald Aufgaben einen Termin oder Zeitraum haben, erscheinen sie hier.</p>'+note;return;}
-  el.innerHTML=modes+legend+peak+clashHtml+'<div class="gwrap"><div class="ginner"><div class="gstick">'+head+'</div>'+body+'</div></div>'+note;
+  el.innerHTML=modes+legend+peak+absLink+clashHtml+'<div class="gwrap"><div class="ginner"><div class="gstick">'+head+'</div>'+body+'</div></div>'+note;
 }
 const RKEY='haushalt-remind-v1';
 let hiddenAt=0;
@@ -1167,12 +1260,20 @@ $('#hlogo').innerHTML=LOGO;$('#wlogo').innerHTML=LOGO;
 function showWelcome(){$('#welcome').hidden=false;}
 $('#w-go').onclick=()=>{try{localStorage.setItem(WKEY,'1');}catch(e){}$('#welcome').hidden=true;};
 $('#btn-welcome').onclick=showWelcome;
+function openHelp(){$('#help-body').innerHTML=HELP_HTML;$('#help').showModal();$('#help').scrollTop=0;}
+$('#btn-help').onclick=openHelp;$('#btn-help2').onclick=openHelp;$('#w-help').onclick=openHelp;
+$('#help-ok').onclick=()=>$('#help').close();
+$('#xd-no').onclick=()=>$('#xd').close();
+$('#xd-ok').onclick=()=>{
+  const only=[...document.querySelectorAll('#xd-list input:checked')].map(i=>xdEx[+i.dataset.x]);
+  $('#xd').close();recordDone(xdT,xdD,only);
+};
 $('#ask-yes').onclick=()=>{const cb=askCb;askCb=null;$('#ask').close();if(cb)cb();};
 $('#ask-no').onclick=()=>{askCb=null;$('#ask').close();};
 $('#f-done').onclick=()=>{
   const d=$('#f-donedate').value,t=state.tasks.find(x=>x.id===editId);
   if(!t||!d||d>today())return;
-  $('#dlg').close();recordDone(t,d);
+  $('#dlg').close();startDone(t,d);
 };
 $('#historie').addEventListener('click',e=>{const b=e.target.closest('[data-hedit]');if(b)openHE(b.dataset.hedit);});
 $('#he-cancel').onclick=()=>$('#he').close();
@@ -1192,7 +1293,7 @@ $('#hef').onsubmit=ev=>{
   if(!e||!nd||nd>today())return;
   undoSnap=JSON.stringify(state);
   if(nd!==e.datum){
-    if(e.prev&&isLatest(e)){const t=restoreTask(e);if(t)finishTask(t,nd);}
+    if(e.prev&&isLatest(e)){const t=restoreTask(e);if(t){finishTask(t,nd);t.nachholen=e.skip||[];}}
     e.datum=nd;
   }
   save();render();$('#he').close();toast('Datum geändert',true);
