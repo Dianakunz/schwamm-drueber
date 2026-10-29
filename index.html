@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.8.1 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.9 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -203,7 +203,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.8.1 vom 29.10.2026</p>
+      <p class="hint">Version 1.9 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -226,6 +226,11 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
       <button id="btn-export">Sicherung speichern</button>
       <button id="btn-import">Sicherung laden</button>
       <input id="file-import" type="file" accept="application/json,.json" hidden>
+      <h4>Plan teilen</h4>
+      <p class="hint">Gib deinen Aufgabenplan an andere weiter: Aufgaben mit Rhythmus, Zusätzen, Saison, Raum und Tipp, aber ohne Termine, Notizen und Historie. Wer die Datei einliest, bekommt die Aufgaben und eigenen Vorschläge dazu, vorhandene bleiben unverändert.</p>
+      <button id="btn-plan-out">Plan teilen (Datei speichern)</button>
+      <button id="btn-plan-in">Geteilten Plan einlesen</button>
+      <input id="file-plan" type="file" accept="application/json,.json" hidden>
       <h4>Zurücksetzen</h4>
       <button id="btn-wipe" class="danger">Alle Daten löschen</button>
       <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
@@ -385,6 +390,12 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <li>Datei öffnen, dann fragt dein Kalender (Google, Apple, Outlook), ob er die Termine übernehmen soll.</li>
 <li>Ganztägige Termine, Zeiträume als mehrtägiger Termin, regelmäßige Aufgaben (alle 2 Wochen oder öfter) als Wiederholung. Geplante Wiederholungen sind enthalten.</li>
 <li>Es ist ein Schnappschuss: Änderungen in der App gelangen nicht automatisch in den Kalender. Wer die Datei zweimal übernimmt, hat die Termine doppelt.</li>
+</ul>
+<h4>Plan teilen</h4>
+<ul>
+<li>Unter „Optionen“, „Daten sichern und zurücksetzen“: „Plan teilen (Datei speichern)“ erzeugt eine Datei mit deinen Aufgaben, Rhythmen, Zusätzen, Saisons, Räumen, Tipps und eigenen Vorschlägen. Termine, Notizen und Historie sind nicht dabei.</li>
+<li>„Geteilten Plan einlesen“ fügt die Aufgaben bei dir hinzu. Aufgaben mit gleichem Namen bleiben unverändert. Neue Aufgaben haben noch keinen Termin; nur ein Zeitraum (Monat) wird übernommen.</li>
+<li>Das ist keine Sicherung: Mit „Sicherung laden“ ersetzt du alle Daten, mit „Plan einlesen“ kommen nur Aufgaben dazu.</li>
 </ul>
 <h4>Aufgabe anlegen</h4>
 <ul>
@@ -1423,6 +1434,47 @@ $('#file-import').onchange=e=>{
       if(!Array.isArray(p.tasks)||!Array.isArray(p.history))throw new Error('format');
       askConfirm('Die aktuellen Daten werden durch die Sicherung ersetzt. Fortfahren?',()=>{state=p;state.settings=state.settings||{garten:false};save();applySettings();render();toast('Sicherung geladen',false);},'Ersetzen');
     }catch(err){askInfo('Diese Datei ist keine gültige Sicherung.');}
+  };
+  r.readAsText(f);e.target.value='';
+};
+
+function planOf(t){
+  const win=t.faellig&&t.bis&&t.bis>=t.faellig;
+  return {name:t.name,bereich:t.bereich,unter:t.unter||null,raum:t.raum||'',typ:t.typ,n:t.n||null,einheit:t.einheit||null,modus:t.modus||null,wochentag:t.wochentag||null,saison:t.saison||null,extras:(t.extras||[]).map(x=>({text:x.text,alle:x.alle,ab:x.ab||null})),tipp:t.tipp||null,monat:win?+t.faellig.slice(5,7):null};
+}
+$('#btn-plan-out').onclick=()=>{
+  const act=state.tasks.filter(t=>!t.erledigt);
+  if(!act.length){askInfo('Es gibt noch keine Aufgaben zum Teilen.');return;}
+  const out={format:'schwamm-plan',version:1,tasks:act.map(planOf),eigene:state.settings.eigene||[]};
+  const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='schwamm-plan-'+today()+'.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast(act.length+(act.length===1?' Aufgabe':' Aufgaben')+' im Plan gespeichert',false);
+};
+$('#btn-plan-in').onclick=()=>$('#file-plan').click();
+$('#file-plan').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let p;
+    try{p=JSON.parse(r.result);if(p.format!=='schwamm-plan'||!Array.isArray(p.tasks))throw new Error('format');}
+    catch(err){askInfo('Diese Datei ist kein geteilter Plan. Eine Sicherung lädst du über „Sicherung laden“.');return;}
+    const have=new Set(state.tasks.filter(t=>!t.erledigt).map(t=>t.name.toLowerCase()));
+    const tk=p.tasks.filter(t=>t&&typeof t.name==='string'&&t.name.trim()&&BEREICHE[t.bereich]);
+    const nw=tk.filter(t=>!have.has(t.name.trim().toLowerCase())),skip=tk.length-nw.length;
+    const eg=(Array.isArray(p.eigene)?p.eigene:[]).filter(t=>t&&typeof t.name==='string'&&BEREICHE[t.bereich]);
+    if(!nw.length&&!eg.length){askInfo('In dieser Datei ist nichts Neues.');return;}
+    askConfirm(nw.length+(nw.length===1?' Aufgabe wird':' Aufgaben werden')+' hinzugefügt'+(skip?', '+skip+' gibt es schon und bleiben unverändert':'')+(eg.length?'. Dazu '+eg.length+(eg.length===1?' eigener Vorschlag':' eigene Vorschläge')+'.':'.')+' Die neuen Aufgaben haben noch keinen Termin, außer sie haben einen Zeitraum (Monat). Fortfahren?',()=>{
+      nw.forEach(t=>{
+        const w=t.monat>=1&&t.monat<=12?windowFor(+t.monat):[null,null];
+        state.tasks.push({id:uid(),erledigt:false,name:t.name.trim(),bereich:t.bereich,unter:t.unter||null,raum:t.raum||'',notiz:'',typ:t.typ||'wiederkehrend',n:t.n||null,einheit:t.einheit||null,modus:t.modus||null,wochentag:t.wochentag||null,saison:t.saison||null,extras:Array.isArray(t.extras)?t.extras:[],tipp:t.tipp||null,faellig:w[0],bis:w[1]});
+      });
+      const l=state.settings.eigene||[];
+      eg.forEach(e=>{const i=l.findIndex(x=>x.name===e.name);if(i>=0)l[i]=e;else l.push(e);});
+      state.settings.eigene=l;
+      if(nw.some(t=>t.bereich==='Garten')&&!state.settings.garten){state.settings.garten=true;}
+      save();applySettings();render();toast('Plan eingelesen',false);
+    },'Hinzufügen');
   };
   r.readAsText(f);e.target.value='';
 };
