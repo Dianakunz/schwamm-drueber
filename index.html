@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.5 vom 28.10.2026 -->
+<!-- Schwamm drüber, Version 1.6 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -183,20 +183,27 @@ details.opt>summary::-webkit-details-marker{display:none}
 details.opt>summary::after{content:"\25BE";float:right;color:var(--muted)}
 details.opt[open]>summary::after{content:"\25B4"}
 details.opt h4{margin:16px 0 2px;font-size:.95rem}
+.prow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.prow.dim{opacity:.55}
+.prow .ic{font-size:1.3rem;width:30px;text-align:center}
+.prow .tx{flex:1;min-width:0}
+.prow .tx b{font-size:.95rem}
+.prow .done{padding:7px 10px;font-size:.85rem}
+.tx .lz{font-size:.8rem}
 </style>
 </head>
 <body>
 <header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1><button id="btn-help" class="helpbtn" aria-label="Anleitung">?</button></header>
 <main>
-  <section id="aufgaben" class="panel on"><div id="gbanner"></div><div id="hchips" class="chips"></div><div id="hrooms" class="chips"></div><div id="hlist"></div></section>
+  <section id="aufgaben" class="panel on"><div id="gbanner"></div><div id="hview" class="chips"></div><div id="hchips" class="chips"></div><div id="hrooms" class="chips"></div><div id="hlist"></div></section>
   <section id="historie" class="panel"></section>
-  <section id="garten" class="panel"><div id="gchips" class="chips"></div><div id="glist"></div></section>
+  <section id="garten" class="panel"><div id="gview" class="chips"></div><div id="gchips" class="chips"></div><div id="glist"></div></section>
   <section id="jahr" class="panel"></section>
   <section id="daten" class="panel data">
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.5 vom 28.10.2026</p>
+      <p class="hint">Version 1.6 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -343,11 +350,18 @@ const RASTER=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','W
 const WKEY='haushalt-welcome-v1';
 const HELP_HTML=`<h4>Die Reiter</h4>
 <ul>
-<li><b>Haus:</b> alle Aufgaben für Wohnung, Keller und Haus außen. Oben filterst du nach Bereich und Raum.</li>
-<li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen). Filter nach Kategorie.</li>
+<li><b>Haus:</b> alle Aufgaben für Wohnung, Keller und Haus außen. Oben filterst du nach Bereich und Raum und wechselst die Ansicht (siehe unten).</li>
+<li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen). Filter nach Kategorie, mit denselben Ansichten wie im Haus.</li>
 <li><b>Jahr:</b> Übersicht über die nächsten 12 Monate oder ein Kalenderjahr, Haus und Garten in zwei Farben.</li>
 <li><b>Historie:</b> was du erledigt hast, mit Diagrammen.</li>
 <li><b>Optionen:</b> Anleitung, Garten, Erinnerungen, Abwesenheit, Sicherung.</li>
+</ul>
+<h4>Ansichten im Haus und im Garten</h4>
+<ul>
+<li><b>Liste:</b> alle Aufgaben nach Dringlichkeit geordnet.</li>
+<li><b>Woche:</b> die nächsten 7 Tage, Tag für Tag.</li>
+<li><b>Monat:</b> die nächsten 4 Wochen, Woche für Woche. Wiederholungen sind Prognosen und blass dargestellt.</li>
+<li>Auf jeder Karte steht in kleiner Schrift, wann die Aufgabe zuletzt erledigt wurde.</li>
 </ul>
 <h4>Aufgabe anlegen</h4>
 <ul>
@@ -593,8 +607,59 @@ function ortText(t){
 function card(t,k){
   const ort=ortText(t);
   const [txt,cls]=dueInfo(t);
-  const ex=dueExtras(t);
-  return '<article class="card '+k+'"><div class="ic">'+esc(iconFor(t))+'</div><div class="tx"><b>'+esc(t.name)+'</b><span class="where">'+esc(ort)+'</span><span class="'+cls+'">'+esc(txt)+'</span>'+(ex.length?'<span class="ex">Diesmal zusätzlich: '+esc(ex.join(', '))+'</span>':'')+'</div><div class="acts"><button class="done" data-done="'+t.id+'">Erledigt</button><div class="sec">'+(t.faellig?'<button class="mini" data-move="'+t.id+'">Verschieben</button>':'')+'<button class="mini mute" data-edit="'+t.id+'">Bearbeiten</button></div></div></article>';
+  const ex=dueExtras(t),lz=t.typ!=='ohne'?lastDone(t.id):null;
+  return '<article class="card '+k+'"><div class="ic">'+esc(iconFor(t))+'</div><div class="tx"><b>'+esc(t.name)+'</b><span class="where">'+esc(ort)+'</span><span class="'+cls+'">'+esc(txt)+'</span>'+(ex.length?'<span class="ex">Diesmal zusätzlich: '+esc(ex.join(', '))+'</span>':'')+(lz?'<span class="lz">zuletzt '+ago(lz)+'</span>':'')+'</div><div class="acts"><button class="done" data-done="'+t.id+'">Erledigt</button><div class="sec">'+(t.faellig?'<button class="mini" data-move="'+t.id+'">Verschieben</button>':'')+'<button class="mini mute" data-edit="'+t.id+'">Bearbeiten</button></div></div></article>';
+}
+const WD=['So','Mo','Di','Mi','Do','Fr','Sa'];
+function ago(d){
+  const n=diff(d,today());
+  if(n<=0)return 'heute';
+  if(n===1)return 'gestern';
+  if(n<14)return 'vor '+n+' Tagen';
+  if(n<60)return 'vor '+Math.floor(n/7)+' Wochen';
+  const m=Math.floor(n/30);return 'vor '+m+(m===1?' Monat':' Monaten');
+}
+function renderPlan(id,keep,mode){
+  const T=today(),monat=mode==='monat',nb=monat?4:7,endEx=addIv(T,monat?28:7,'Tage');
+  const all=state.tasks.filter(t=>!t.erledigt&&keep(t)&&!isRest(t));
+  const over=[],run=[],bk=[];
+  for(let i=0;i<nb;i++)bk.push([]);
+  const put=(t,o)=>{const i=Math.floor(diff(T,o.a)/(monat?7:1));if(i>=0&&i<nb)bk[i].push({t:t,o:o,n:1});};
+  all.filter(t=>t.typ!=='ohne'&&t.faellig).forEach(t=>{
+    occurrences(t,T,endEx).forEach(o=>{
+      if(o.b&&o.b>=o.a){
+        if(o.b<T){if(!o.proj)over.push({t:t,o:o,n:1});}
+        else if(o.a<=T){if(!o.proj)run.push({t:t,o:o,n:1});}
+        else put(t,o);
+        return;
+      }
+      if(o.late){over.push({t:t,o:o,n:1});return;}
+      put(t,o);
+    });
+  });
+  const merge=arr=>{const m=new Map();arr.forEach(x=>{if(m.has(x.t.id))m.get(x.t.id).n++;else m.set(x.t.id,x);});return [...m.values()].sort((a,b)=>a.t.name.localeCompare(b.t.name,'de'));};
+  const row=(x,kind)=>{
+    const t=x.t,o=x.o,w=ortText(t),proj=!!o.proj,sub=[];
+    if(w)sub.push(w);
+    if(o.b&&o.b>=o.a)sub.push('Zeitraum '+fmt(o.a).slice(0,6)+' bis '+fmt(o.b).slice(0,6));
+    else if(kind==='over'){const d=diff(o.a,T);sub.push('seit '+d+(d===1?' Tag':' Tagen'));}
+    else if(monat)sub.push(WD[parse(o.a).getDay()]+' '+fmt(o.a).slice(0,6));
+    const ex=proj?[]:dueExtras(t);
+    return '<div class="prow'+(proj?' dim':'')+'"><div class="ic">'+esc(iconFor(t))+'</div><div class="tx"><b>'+esc(t.name)+(x.n>1?' ('+x.n+'×)':'')+'</b>'+(sub.length?'<span>'+esc(sub.join(', '))+'</span>':'')+(ex.length?'<span class="ex">Diesmal zusätzlich: '+esc(ex.join(', '))+'</span>':'')+'</div>'+(proj?'':'<div class="acts"><button class="done" data-done="'+t.id+'">Erledigt</button><div class="sec"><button class="mini" data-move="'+t.id+'">Verschieben</button></div></div>')+'</div>';
+  };
+  let h='<p class="hint">'+(monat?'Die nächsten 4 Wochen':'Die nächsten 7 Tage')+', blasse Einträge sind geplante Wiederholungen.</p>';
+  if(over.length)h+='<h2 class="late">Überfällig</h2>'+merge(over).map(x=>row(x,'over')).join('');
+  if(run.length)h+='<h2>Läuft gerade</h2>'+merge(run).map(x=>row(x,'run')).join('');
+  bk.forEach((arr,i)=>{
+    let title;
+    if(monat){const a=addIv(T,i*7,'Tage'),b=addIv(T,i*7+6,'Tage');title=(i===0?'Diese Woche':i===1?'Nächste Woche':'In '+i+' Wochen')+' ('+fmt(a).slice(0,6)+' bis '+fmt(b).slice(0,6)+')';}
+    else{const d=addIv(T,i,'Tage');title=(i===0?'Heute, ':i===1?'Morgen, ':'')+WD[parse(d).getDay()]+' '+fmt(d).slice(0,6);}
+    const items=merge(arr);
+    h+='<h2>'+title+'</h2>'+(items.length?items.map(x=>row(x,'plan')).join(''):'<p class="hint">Nichts geplant.</p>');
+  });
+  const nd=all.filter(t=>t.typ==='ohne'||!t.faellig).length;
+  if(nd)h+='<p class="hint">'+nd+(nd===1?' Aufgabe ohne Termin oder noch nicht eingeplant steht':' Aufgaben ohne Termin oder noch nicht eingeplant stehen')+' in der Liste.</p>';
+  $('#'+id).innerHTML=h;
 }
 function renderTasks(id,keep,empty){
   const all=state.tasks.filter(t=>!t.erledigt&&keep(t)),rest=all.filter(isRest),act=all.filter(t=>!isRest(t)),T=today();
@@ -668,7 +733,12 @@ function render(){
   if(hR!=='Alle'&&!rooms.includes(hR))hR='Alle';
   $('#hchips').innerHTML=bs.length>1?'<span class="cl">Bereich</span>'+chips(['Alle'].concat(bs),hB,'hb'):'';
   $('#hrooms').innerHTML=rooms.length?'<span class="cl">Raum</span>'+chips(['Alle'].concat(rooms),hR,'hr'):'';
-  renderTasks('hlist',t=>t.bereich!=='Garten'&&(hB==='Alle'||t.bereich===hB)&&(hR==='Alle'||t.raum===hR),(hB!=='Alle'||hR!=='Alle')?'Keine Aufgaben für diesen Filter.':'');
+  const sicht=state.settings.sicht||'liste';
+  const vch='<span class="cl">Ansicht</span>'+[['liste','Liste'],['woche','Woche'],['monat','Monat']].map(m=>'<button class="chip'+(sicht===m[0]?' on':'')+'" data-sicht="'+m[0]+'">'+m[1]+'</button>').join('');
+  $('#hview').innerHTML=haus.length?vch:'';
+  const keepH=t=>t.bereich!=='Garten'&&(hB==='Alle'||t.bereich===hB)&&(hR==='Alle'||t.raum===hR);
+  if(sicht!=='liste'&&haus.length)renderPlan('hlist',keepH,sicht);
+  else renderTasks('hlist',keepH,(hB!=='Alle'||hR!=='Alle')?'Keine Aufgaben für diesen Filter.':'');
   if(!haus.length)$('#hlist').insertAdjacentHTML('beforeend',planBox('haus'));
   $('#gbanner').innerHTML=absHint()+((!gOn&&state.settings.gartenFrage!==false)?'<div class="banner"><b>🌱 Gehört ein Garten dazu?</b><span>Dann kannst du Rasen, Beete, Hecken und mehr in einem eigenen Reiter planen.</span><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-gon="1">Garten aktivieren</button><button class="link" data-gno="1">Nicht mehr fragen</button></div></div>':'');
   if(gOn){
@@ -676,7 +746,10 @@ function render(){
     const cats=[...new Set(gt.map(t=>t.unter).filter(Boolean))].sort((a,b)=>{const i=UNTER.indexOf(a),j=UNTER.indexOf(b);return (i<0?99:i)-(j<0?99:j)||a.localeCompare(b,'de');});
     if(gFilter!=='Alle'&&!cats.includes(gFilter))gFilter='Alle';
     $('#gchips').innerHTML=cats.length?'<span class="cl">Kategorie</span>'+chips(['Alle'].concat(cats),gFilter,'gc'):'';
-    renderTasks('glist',t=>t.bereich==='Garten'&&(gFilter==='Alle'||t.unter===gFilter),gFilter!=='Alle'?'Keine Aufgaben in dieser Kategorie.':'');
+    $('#gview').innerHTML=gt.length?vch:'';
+    const keepG=t=>t.bereich==='Garten'&&(gFilter==='Alle'||t.unter===gFilter);
+    if(sicht!=='liste'&&gt.length)renderPlan('glist',keepG,sicht);
+    else renderTasks('glist',keepG,gFilter!=='Alle'?'Keine Aufgaben in dieser Kategorie.':'');
     if(!gt.length)$('#glist').insertAdjacentHTML('beforeend',planBox('garten'));
     $('#glist').insertAdjacentHTML('beforeend','<p class="hint">Den Gartenbereich kannst du unter „Optionen“ ausschalten. <button class="link" data-goto="daten">Zu den Einstellungen</button></p>');
   }
@@ -791,11 +864,12 @@ $('#aufgaben').addEventListener('click',onTaskClick);
 $('#glist').addEventListener('click',onTaskClick);
 $('#jahr').addEventListener('click',e=>{if(e.target.closest('[data-gfreq]')){ganttFreq=!ganttFreq;renderGantt();return;}onTaskClick(e);});
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew]');if(!c)return;
+  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew],[data-sicht]');if(!c)return;
   if(c.dataset.gon!==undefined){state.settings.garten=true;save();applySettings();render();showTab('garten');toast('Gartenbereich aktiviert',false);return;}
   if(c.dataset.gno!==undefined){state.settings.gartenFrage=false;save();render();toast('Okay, ich frage nicht mehr. Den Garten findest du jederzeit unter „Optionen“.',false);return;}
   if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
   if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
+  if(c.dataset.sicht!==undefined){state.settings.sicht=c.dataset.sicht;save();render();return;}
   if(c.dataset.absnew!==undefined){openAbs();return;}
   if(c.dataset.abshift!==undefined){const a=absList().find(x=>x.id===c.dataset.abshift);if(a)shiftClash(a);return;}
   if(c.dataset.absdel!==undefined){undoSnap=JSON.stringify(state);state.settings.abwesend=absList().filter(x=>x.id!==c.dataset.absdel);save();render();toast('Abwesenheit entfernt',true);return;}
