@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.11 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.11.1 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -209,7 +209,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.11 vom 29.10.2026</p>
+      <p class="hint">Version 1.11.1 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -234,6 +234,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Daten sichern und zurücksetzen</summary>
       <p class="hint">Alle Aufgaben und die Historie werden nur in diesem Browser auf diesem Gerät gespeichert. Mit einer Sicherung kannst du sie aufbewahren oder auf ein anderes Gerät übertragen.</p>
       <p class="hint" id="bk-info"></p>
+      <label class="chk"><input type="checkbox" id="set-bk">Alle 30 Tage an eine Sicherung erinnern</label>
       <button id="btn-export">Sicherung speichern</button>
       <button id="btn-import">Sicherung laden</button>
       <input id="file-import" type="file" accept="application/json,.json" hidden>
@@ -460,7 +461,8 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 </ul>
 <h4>Sicherungs-Erinnerung</h4>
 <ul>
-<li>Ist die letzte Sicherung 30 Tage her (oder gab es noch keine), erscheint oben im Reiter Haus ein Hinweis mit „Jetzt sichern“. „In 7 Tage erinnern“ schiebt ihn um eine Woche.</li>
+<li>Ist die letzte Sicherung 30 Tage her (oder gab es noch keine), erscheint oben im Reiter Haus ein Hinweis mit „Jetzt sichern“. „In 7 Tagen erinnern“ schiebt ihn um eine Woche, „Nicht mehr erinnern“ schaltet ihn aus.</li>
+<li>Unter „Optionen“ lässt sich die Erinnerung mit einem Häkchen wieder ein- oder ausschalten.</li>
 <li>Unter „Optionen“ steht, wann du zuletzt gesichert hast.</li>
 </ul>
 <h4>Ohne Internet nutzen</h4>
@@ -933,13 +935,14 @@ $('#aufgaben').addEventListener('click',onTaskClick);
 $('#glist').addEventListener('click',onTaskClick);
 $('#jahr').addEventListener('click',e=>{if(e.target.closest('[data-gfreq]')){ganttFreq=!ganttFreq;renderGantt();return;}onTaskClick(e);});
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew],[data-sicht],[data-ics],[data-bkup],[data-bklater]');if(!c)return;
+  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew],[data-sicht],[data-ics],[data-bkup],[data-bklater],[data-bkoff]');if(!c)return;
   if(c.dataset.gon!==undefined){state.settings.garten=true;save();applySettings();render();showTab('garten');toast('Gartenbereich aktiviert',false);return;}
   if(c.dataset.gno!==undefined){state.settings.gartenFrage=false;save();render();toast('Okay, ich frage nicht mehr. Den Garten findest du jederzeit unter „Optionen“.',false);return;}
   if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
   if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
   if(c.dataset.sicht!==undefined){state.settings.sicht=c.dataset.sicht;save();render();return;}
   if(c.dataset.bkup!==undefined){$('#btn-export').click();return;}
+  if(c.dataset.bkoff!==undefined){state.settings.bkOff=true;save();applySettings();render();toast('Okay, ich erinnere nicht mehr. Du kannst es unter „Optionen“ wieder einschalten.',false);return;}
   if(c.dataset.bklater!==undefined){const d=new Date();d.setDate(d.getDate()+7);state.settings.bkSnooze=iso(d);save();render();return;}
   if(c.dataset.ics!==undefined){openIcs();return;}
   if(c.dataset.absnew!==undefined){openAbs();return;}
@@ -1531,14 +1534,15 @@ function bkDays(){
 }
 function bkBanner(){
   const st=state.settings;
-  if(!state.tasks.length)return '';
+  if(!state.tasks.length||st.bkOff)return '';
   const d=bkDays();
   if(d<30||(st.bkSnooze&&st.bkSnooze>today()))return '';
   const was=st.lastBackup?'Die letzte Sicherung ist '+d+' Tage her.':'Du hast noch keine Sicherung gespeichert.';
-  return '<div class="banner"><b>💾 Zeit für eine Sicherung</b><span>'+was+' Deine Daten liegen nur auf diesem Gerät.</span><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-bkup="1">Jetzt sichern</button><button class="link" data-bklater="1">In 7 Tagen erinnern</button></div></div>';
+  return '<div class="banner"><b>💾 Zeit für eine Sicherung</b><span>'+was+' Deine Daten liegen nur auf diesem Gerät.</span><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-bkup="1">Jetzt sichern</button><button class="link" data-bklater="1">In 7 Tagen erinnern</button><button class="link" data-bkoff="1">Nicht mehr erinnern</button></div></div>';
 }
 function bkInfo(){
   const st=state.settings;
+  $('#set-bk').checked=!st.bkOff;
   $('#bk-info').textContent=st.lastBackup?'Letzte Sicherung: '+fmt(st.lastBackup)+'.':'Noch keine Sicherung gespeichert.';
 }
 function renderEinkauf(){
@@ -1563,6 +1567,7 @@ $('#ek-list').addEventListener('click',e=>{
   else if(d){state.einkauf=state.einkauf.filter(i=>i.id!==d.dataset.ekdel);save();renderEinkauf();}
   else if(k){state.einkauf=state.einkauf.filter(i=>!i.done);save();renderEinkauf();}
 });
+$('#set-bk').onchange=e=>{state.settings.bkOff=!e.target.checked;save();render();};
 $('#set-ek').onchange=e=>{state.settings.einkauf=e.target.checked;save();applySettings();render();};
 
 load();applySettings();render();
