@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.9.1 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.10 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -88,6 +88,11 @@ input,select,textarea{width:100%;margin-top:3px;padding:9px;border:1px solid var
 .acts .sec{display:flex;justify-content:space-between;gap:10px}
 .mini{background:none;border:0;padding:2px 0;font-size:.8rem;color:var(--accent);text-decoration:underline}
 .mini.mute{color:var(--muted)}
+.ek form{display:flex;gap:8px;margin:12px 0}
+.ek form input{margin:0;flex:1}
+.ek .cr label{display:flex;gap:10px;align-items:center;margin:0;padding:12px 0;color:var(--ink);font-size:1rem;flex:1;border:0}
+.ek .cr input{width:auto;margin:0}
+.ek .cr.done span{text-decoration:line-through;color:var(--muted)}
 .cr{display:flex;align-items:center;border-bottom:1px solid var(--line)}
 .cat .cr label{border:0;flex:1}
 .cr .mini{padding:8px 4px 8px 12px;font-size:1rem;text-decoration:none}
@@ -199,11 +204,12 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <section id="historie" class="panel"></section>
   <section id="garten" class="panel"><div id="gview" class="chips"></div><div id="gchips" class="chips"></div><div id="glist"></div></section>
   <section id="jahr" class="panel"></section>
+  <section id="einkauf" class="panel ek"><form id="ek-form"><input id="ek-in" list="ek-names" placeholder="Was soll auf die Liste?" maxlength="80" autocomplete="off" aria-label="Neuer Eintrag"><datalist id="ek-names"></datalist><button class="primary">Hinzufügen</button></form><div id="ek-list"></div></section>
   <section id="daten" class="panel data">
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.9.1 vom 29.10.2026</p>
+      <p class="hint">Version 1.10 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -220,6 +226,10 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
       <div id="abs-list"></div>
       <button id="btn-abs">Abwesenheit hinzufügen</button>
       <p class="hint">Während einer Abwesenheit, z. B. im Urlaub, rutschen Termine auf den ersten Tag danach, und es gibt keinen Erinnerungs-Hinweis. Im Reiter Jahr ist sie als graues Band zu sehen.</p>
+    </details>
+    <details class="opt"><summary>Einkaufsliste</summary>
+      <label class="chk"><input type="checkbox" id="set-ek">Einkaufsliste aktivieren</label>
+      <p class="hint">Zeigt einen zusätzlichen Reiter „Einkauf“ mit einer einfachen Liste zum Abhaken. Die Liste liegt nur auf diesem Gerät und ist Teil der Sicherung. Beim Ausschalten bleibt sie gespeichert.</p>
     </details>
     <details class="opt"><summary>Daten sichern und zurücksetzen</summary>
       <p class="hint">Alle Aufgaben und die Historie werden nur in diesem Browser auf diesem Gerät gespeichert. Mit einer Sicherung kannst du sie aufbewahren oder auf ein anderes Gerät übertragen.</p>
@@ -298,6 +308,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <button data-tab="aufgaben" class="on">Haus</button>
   <button data-tab="garten" id="nav-garten" style="display:none">Garten</button>
   <button data-tab="jahr">Jahr</button>
+  <button data-tab="einkauf" id="nav-einkauf" style="display:none">Einkauf</button>
   <button data-tab="historie">Historie</button>
   <button data-tab="daten">Optionen</button>
 </nav>
@@ -368,7 +379,8 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen). Filter nach Kategorie, mit denselben Ansichten wie im Haus.</li>
 <li><b>Jahr:</b> Übersicht über die nächsten 12 Monate oder ein Kalenderjahr, Haus und Garten in zwei Farben.</li>
 <li><b>Historie:</b> was du erledigt hast, mit Diagrammen.</li>
-<li><b>Optionen:</b> Anleitung, Garten, Erinnerungen, Abwesenheit, Sicherung, Plan teilen.</li>
+<li><b>Optionen:</b> Anleitung, Garten, Erinnerungen, Abwesenheit, Einkaufsliste, Sicherung, Plan teilen.</li>
+<li><b>Einkauf:</b> optional, erscheint nach dem Einschalten unter Optionen.</li>
 </ul>
 <h4>Aufgabe anlegen</h4>
 <ul>
@@ -427,6 +439,13 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <h4>Der Reiter Historie</h4>
 <ul>
 <li>Zeigt, was du erledigt hast. Der Zeitraum der Diagramme lässt sich umstellen.</li>
+</ul>
+<h4>Der Reiter Einkauf (optional)</h4>
+<ul>
+<li>Unter „Optionen“, „Einkaufsliste“ einschalten, dann erscheint der Reiter „Einkauf“.</li>
+<li>Oben tippst du ein, was du brauchst, und tippst auf „Hinzufügen“. Früher eingetragene Wörter schlägt die App beim Tippen vor.</li>
+<li>Haken setzen, wenn es im Korb liegt; Erledigtes rutscht nach unten und lässt sich mit „Erledigte entfernen“ aufräumen. Mit ✕ löschst du einen Eintrag.</li>
+<li>Die Liste liegt nur auf diesem Gerät, ist aber Teil der Sicherung. Im geteilten Plan ist sie nicht enthalten.</li>
 </ul>
 <h4>Erinnerungen und Abwesenheit</h4>
 <ul>
@@ -794,6 +813,7 @@ function render(){
   try{renderHistory();}catch(e){}
   try{renderGantt();}catch(e){}
   try{renderAbs();}catch(e){}
+  try{renderEinkauf();}catch(e){}
 }
 
 function toast(msg,undo){
@@ -1419,6 +1439,10 @@ function applySettings(){
   $('#nav-garten').style.display=on?'':'none';
   $('#set-garten').checked=on;
   if(!on&&tab==='garten')showTab('aufgaben');
+  state.einkauf=Array.isArray(state.einkauf)?state.einkauf:[];
+  const ek=!!state.settings.einkauf;
+  $('#nav-einkauf').style.display=ek?'':'none';$('#set-ek').checked=ek;
+  if(!ek&&tab==='einkauf')showTab('aufgaben');
 }
 $('#set-garten').onchange=e=>{state.settings.garten=e.target.checked;save();applySettings();render();};
 
@@ -1482,6 +1506,30 @@ $('#file-plan').onchange=e=>{
   };
   r.readAsText(f);e.target.value='';
 };
+
+function renderEinkauf(){
+  const l=state.einkauf||[],open=l.filter(x=>!x.done),done=l.filter(x=>x.done);
+  const row=x=>'<div class="cr'+(x.done?' done':'')+'"><label><input type="checkbox" data-ek="'+x.id+'"'+(x.done?' checked':'')+'><span>'+esc(x.text)+'</span></label><button type="button" class="mini mute" data-ekdel="'+x.id+'" aria-label="Eintrag löschen">✕</button></div>';
+  let h=open.map(row).join('')+done.map(row).join('');
+  if(!l.length)h='<p class="empty">Die Liste ist leer. Trag oben ein, was du brauchst.</p>';
+  if(done.length)h+='<p class="hint"><button type="button" class="link" data-ekclear="1">Erledigte entfernen ('+done.length+')</button></p>';
+  $('#ek-list').innerHTML=h;
+  $('#ek-names').innerHTML=(state.settings.ekNamen||[]).map(n=>'<option value="'+esc(n)+'">').join('');
+}
+$('#ek-form').onsubmit=e=>{
+  e.preventDefault();
+  const v=$('#ek-in').value.trim();if(!v)return;
+  state.einkauf.push({id:uid(),text:v,done:false});
+  const nm=(state.settings.ekNamen||[]).filter(n=>n.toLowerCase()!==v.toLowerCase());nm.unshift(v);state.settings.ekNamen=nm.slice(0,100);
+  $('#ek-in').value='';save();renderEinkauf();$('#ek-in').focus();
+};
+$('#ek-list').addEventListener('click',e=>{
+  const c=e.target.closest('[data-ek]'),d=e.target.closest('[data-ekdel]'),k=e.target.closest('[data-ekclear]');
+  if(c){const x=state.einkauf.find(i=>i.id===c.dataset.ek);if(x){x.done=c.checked;save();renderEinkauf();}}
+  else if(d){state.einkauf=state.einkauf.filter(i=>i.id!==d.dataset.ekdel);save();renderEinkauf();}
+  else if(k){state.einkauf=state.einkauf.filter(i=>!i.done);save();renderEinkauf();}
+});
+$('#set-ek').onchange=e=>{state.settings.einkauf=e.target.checked;save();applySettings();render();};
 
 load();applySettings();render();
 $('#hlogo').innerHTML=LOGO;$('#wlogo').innerHTML=LOGO;
