@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.11.1 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.12 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -9,12 +9,14 @@
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="theme-color" content="#1f6f66">
+<script>try{var th=localStorage.getItem("haushalt-theme-v1");if(th==="light"||th==="dark")document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Schwamm drüber">
 <style>
 :root{color-scheme:light dark;--bg:#f3f6f5;--card:#fff;--ink:#17302c;--muted:#5d716d;--line:#d9e3e0;--accent:#1f6f66;--on-accent:#fff;--late:#b4492f;--soon:#9a6516;--ok:#3d7a5a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1f1d;--card:#172b28;--ink:#e6f0ee;--muted:#9db3af;--line:#28413d;--accent:#5cbfb2;--on-accent:#08201d;--late:#e58a70;--soon:#e0b25a;--ok:#7bc49a}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1f1d;--card:#172b28;--ink:#e6f0ee;--muted:#9db3af;--line:#28413d;--accent:#5cbfb2;--on-accent:#08201d;--late:#e58a70;--soon:#e0b25a;--ok:#7bc49a}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f1f1d;--card:#172b28;--ink:#e6f0ee;--muted:#9db3af;--line:#28413d;--accent:#5cbfb2;--on-accent:#08201d;--late:#e58a70;--soon:#e0b25a;--ok:#7bc49a}
 :root[data-theme="light"]{color-scheme:light}
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -117,7 +119,8 @@ h3[tabindex]{outline:none}
 .plan{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;text-align:center}
 .plan-btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:1rem}
 :root{--garten:#6a8f1f}
-@media (prefers-color-scheme:dark){:root{--garten:#a8c95a}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--garten:#a8c95a}}
+:root[data-theme="dark"]{--garten:#a8c95a}
 .gwrap{overflow:auto;max-height:calc(100vh - 300px);max-height:calc(100dvh - 300px);min-height:260px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-top:8px}
 .gstick{position:sticky;top:0;z-index:5;background:var(--card)}
 .srow{display:flex;gap:10px}
@@ -147,7 +150,8 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
 .gl4{background:color-mix(in srgb,var(--accent) 58%,transparent)}
 .gfl{padding:6px 10px;font-size:.82rem;color:var(--muted);border-bottom:1px solid var(--line);background:var(--bg)}
 :root{--c-keller:#3b7ea1;--c-rund:#8a5aa0}
-@media (prefers-color-scheme:dark){:root{--c-keller:#7db7d8;--c-rund:#c39bd3}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c-keller:#7db7d8;--c-rund:#c39bd3}}
+:root[data-theme="dark"]{--c-keller:#7db7d8;--c-rund:#c39bd3}
 .hbars{display:flex;gap:3px;align-items:flex-end;height:160px;margin-top:8px}
 .hcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-width:0}
 .hnum{text-align:center;font-size:.72rem;color:var(--muted);min-height:14px}
@@ -209,7 +213,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.11.1 vom 29.10.2026</p>
+      <p class="hint">Version 1.12 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -226,6 +230,10 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
       <div id="abs-list"></div>
       <button id="btn-abs">Abwesenheit hinzufügen</button>
       <p class="hint">Während einer Abwesenheit, z. B. im Urlaub, rutschen Termine auf den ersten Tag danach, und es gibt keinen Erinnerungs-Hinweis. Im Reiter Jahr ist sie als graues Band zu sehen.</p>
+    </details>
+    <details class="opt"><summary>Darstellung</summary>
+      <label>Design<select id="set-theme"><option value="auto">Wie das Handy</option><option value="light">Hell</option><option value="dark">Dunkel</option></select></label>
+      <p class="hint">Gilt nur auf diesem Gerät und ist nicht Teil der Sicherung. „Wie das Handy“ richtet sich nach der Einstellung deines Handys.</p>
     </details>
     <details class="opt"><summary>Einkaufsliste</summary>
       <label class="chk"><input type="checkbox" id="set-ek">Einkaufsliste aktivieren</label>
@@ -458,6 +466,10 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <ul>
 <li>Alle Daten liegen nur in diesem Browser auf diesem Gerät. Sichere sie regelmäßig unter Optionen und lade die Sicherung bei Bedarf wieder.</li>
 <li>Tipp fürs Handy: Im Browsermenü „Zum Startbildschirm hinzufügen“, dann öffnet sich die App wie eine normale App.</li>
+</ul>
+<h4>Hell oder dunkel</h4>
+<ul>
+<li>Unter „Optionen“, „Darstellung“ wählst du „Wie das Handy“, „Hell“ oder „Dunkel“. Die Wahl gilt nur auf diesem Gerät und ist nicht Teil der Sicherung.</li>
 </ul>
 <h4>Sicherungs-Erinnerung</h4>
 <ul>
@@ -1456,6 +1468,11 @@ function applySettings(){
   $('#set-garten').checked=on;
   if(!on&&tab==='garten')showTab('aufgaben');
   state.einkauf=Array.isArray(state.einkauf)?state.einkauf:[];
+  {let th='auto';try{th=localStorage.getItem('haushalt-theme-v1')||'auto';}catch(e){}
+   $('#set-theme').value=th;
+   if(th==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',th);
+   const dark=th==='dark'||(th==='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches);
+   const mt=document.querySelector('meta[name=theme-color]');if(mt)mt.setAttribute('content',dark?'#0f1f1d':'#1f6f66');}
   bkInfo();
   const ek=!!state.settings.einkauf;
   $('#nav-einkauf').style.display=ek?'':'none';$('#set-ek').checked=ek;
@@ -1567,6 +1584,7 @@ $('#ek-list').addEventListener('click',e=>{
   else if(d){state.einkauf=state.einkauf.filter(i=>i.id!==d.dataset.ekdel);save();renderEinkauf();}
   else if(k){state.einkauf=state.einkauf.filter(i=>!i.done);save();renderEinkauf();}
 });
+$('#set-theme').onchange=e=>{try{localStorage.setItem('haushalt-theme-v1',e.target.value);}catch(err){}applySettings();};
 $('#set-bk').onchange=e=>{state.settings.bkOff=!e.target.checked;save();render();};
 $('#set-ek').onchange=e=>{state.settings.einkauf=e.target.checked;save();applySettings();render();};
 
