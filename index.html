@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.7 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.7.1 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -203,7 +203,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.7 vom 29.10.2026</p>
+      <p class="hint">Version 1.7.1 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -366,7 +366,7 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 </ul>
 <h4>Eigene Vorschläge</h4>
 <ul>
-<li>Beim Bearbeiten einer Aufgabe: „Als Vorschlag speichern“. Sie steht dann in der Vorschlagsliste unter „Eigene“.</li>
+<li>Im Formular beim Anlegen und beim Bearbeiten: „Als Vorschlag speichern“. Sie steht dann in der Vorschlagsliste unter „Eigene“.</li>
 <li>Gemerkt werden Wiederholung, Zusätze, Saison, Wunschwochentag, Raum und Tipp. Ein Zeitraum wird als Monat gemerkt.</li>
 <li>Mit dem ✕ entfernst du einen eigenen Vorschlag wieder.</li>
 </ul>
@@ -970,7 +970,7 @@ function openForm(id,preset,proto){
   $('#f-date').value=src&&src.faellig?src.faellig:'';
   $('#f-bis').value=src&&src.bis?src.bis:'';
   $('#f-note').value=t?t.notiz||'':'';
-  $('#f-del').style.display=t?'':'none';$('#f-sug').style.display=t?'':'none';
+  $('#f-del').style.display=t?'':'none';
   $('#f-donewrap').style.display=t?'':'none';$('#f-donedate').value=today();$('#f-donedate').max=today();
   $('#f-cancel').textContent=t?'Abbrechen':'Zurück';
   syncForm();rememberWin();$('#dlg').showModal();
