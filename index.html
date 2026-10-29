@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.7.1 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.8 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -203,7 +203,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.7.1 vom 29.10.2026</p>
+      <p class="hint">Version 1.8 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -369,6 +369,13 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <li>Im Formular beim Anlegen und beim Bearbeiten: „Als Vorschlag speichern“. Sie steht dann in der Vorschlagsliste unter „Eigene“.</li>
 <li>Gemerkt werden Wiederholung, Zusätze, Saison, Wunschwochentag, Raum und Tipp. Ein Zeitraum wird als Monat gemerkt.</li>
 <li>Mit dem ✕ entfernst du einen eigenen Vorschlag wieder.</li>
+</ul>
+<h4>In den Kalender übertragen</h4>
+<ul>
+<li>Im Reiter „Jahr“ unter der Übersicht: „In den Kalender übertragen“. Es entsteht eine Datei (.ics) mit allen Terminen des gezeigten Zeitraums.</li>
+<li>Datei öffnen, dann fragt dein Kalender (Google, Apple, Outlook), ob er die Termine übernehmen soll.</li>
+<li>Ganztägige Termine, Zeiträume als mehrtägiger Termin, regelmäßige Aufgaben (alle 2 Wochen oder öfter) als Wiederholung. Geplante Wiederholungen sind enthalten.</li>
+<li>Es ist ein Schnappschuss: Änderungen in der App gelangen nicht automatisch in den Kalender. Wer die Datei zweimal übernimmt, hat die Termine doppelt.</li>
 </ul>
 <h4>Aufgabe anlegen</h4>
 <ul>
@@ -871,12 +878,13 @@ $('#aufgaben').addEventListener('click',onTaskClick);
 $('#glist').addEventListener('click',onTaskClick);
 $('#jahr').addEventListener('click',e=>{if(e.target.closest('[data-gfreq]')){ganttFreq=!ganttFreq;renderGantt();return;}onTaskClick(e);});
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew],[data-sicht]');if(!c)return;
+  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew],[data-sicht],[data-ics]');if(!c)return;
   if(c.dataset.gon!==undefined){state.settings.garten=true;save();applySettings();render();showTab('garten');toast('Gartenbereich aktiviert',false);return;}
   if(c.dataset.gno!==undefined){state.settings.gartenFrage=false;save();render();toast('Okay, ich frage nicht mehr. Den Garten findest du jederzeit unter „Optionen“.',false);return;}
   if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
   if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
   if(c.dataset.sicht!==undefined){state.settings.sicht=c.dataset.sicht;save();render();return;}
+  if(c.dataset.ics!==undefined){exportIcs();return;}
   if(c.dataset.absnew!==undefined){openAbs();return;}
   if(c.dataset.abshift!==undefined){const a=absList().find(x=>x.id===c.dataset.abshift);if(a)shiftClash(a);return;}
   if(c.dataset.absdel!==undefined){undoSnap=JSON.stringify(state);state.settings.abwesend=absList().filter(x=>x.id!==c.dataset.absdel);save();render();toast('Abwesenheit entfernt',true);return;}
@@ -1206,6 +1214,41 @@ function occurrences(t,start,endEx){
   }
   return out;
 }
+function exportIcs(){
+  const T=today(),td=parse(T),gm=state.settings.gantt||'rolling';
+  const sd=gm==='this'?new Date(td.getFullYear(),0,1):gm==='next'?new Date(td.getFullYear()+1,0,1):new Date(td.getFullYear(),td.getMonth(),1);
+  const start=iso(sd),endEx=iso(new Date(sd.getFullYear(),sd.getMonth()+12,1)),lastIncl=iso(new Date(sd.getFullYear(),sd.getMonth()+12,0));
+  const gOn=!!state.settings.garten;
+  const d8=x=>x.replace(/-/g,''),nx=x=>{const d=parse(x);return d8(iso(new Date(d.getFullYear(),d.getMonth(),d.getDate()+1)));};
+  const esc2=x=>String(x||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
+  const fold=l=>{const o=[];let cur='',len=0;for(const ch of l){const b=new TextEncoder().encode(ch).length;if(len+b>73){o.push(cur);cur=' '+ch;len=1+b;}else{cur+=ch;len+=b;}}o.push(cur);return o.join('\r\n');};
+  const stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Schwamm drüber//DE','CALSCALE:GREGORIAN','X-WR-CALNAME:Schwamm drüber'];
+  let n=0;
+  state.tasks.filter(t=>!t.erledigt&&t.typ!=='ohne'&&t.faellig&&(gOn||t.bereich!=='Garten')).forEach(t=>{
+    const per=t.typ==='wiederkehrend'&&t.n?t.n*(t.einheit==='Tage'?1:t.einheit==='Wochen'?7:30):0;
+    const desc=[t.raum?'Raum: '+t.raum:'',t.notiz||'',t.tipp?'Tipp: '+t.tipp:'',(t.extras||[]).length?'Zusätze: '+t.extras.map(x=>x.text).join(', '):''].filter(Boolean).join('\n');
+    const add=(a,b,rr,i)=>{
+      n++;
+      L.push('BEGIN:VEVENT','UID:'+t.id+'-'+i+'@schwamm-drueber','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+d8(a),'DTEND;VALUE=DATE:'+nx(b||a));
+      if(rr)L.push(rr);
+      L.push(fold('SUMMARY:'+esc2(iconFor(t)+' '+t.name)));
+      if(desc)L.push(fold('DESCRIPTION:'+esc2(desc)));
+      L.push('TRANSP:TRANSPARENT','END:VEVENT');
+    };
+    const occ=occurrences(t,start,endEx);if(!occ.length)return;
+    if(per&&per<=14&&!t.saison&&!t.bis&&(t.einheit==='Tage'||t.einheit==='Wochen')){
+      add(occ[0].a,null,'RRULE:FREQ='+(t.einheit==='Tage'?'DAILY':'WEEKLY')+';INTERVAL='+t.n+';UNTIL='+d8(lastIncl),0);return;
+    }
+    occ.forEach((o,i)=>add(o.a,o.b,null,i));
+  });
+  L.push('END:VCALENDAR');
+  if(!n){askInfo('Im gewählten Zeitraum gibt es keine Aufgaben mit Termin.');return;}
+  const b=new Blob([L.join('\r\n')+'\r\n'],{type:'text/calendar'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='schwamm-drueber-'+today()+'.ics';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast(n+(n===1?' Termin':' Termine')+' für den Kalender erstellt',false);
+}
 function renderGantt(){
   const el=$('#jahr');
   const T=today(),td=parse(T),gm=state.settings.gantt||'rolling';
@@ -1263,7 +1306,7 @@ function renderGantt(){
   const mx=Math.max.apply(null,cnt);
   head+='<div class="grow ghead"><div class="glabel">Aufgaben im Monat</div><div class="gtrack">'+cnt.map(c=>'<div class="gm gl'+(mx?Math.ceil(c/mx*4):0)+'">'+(c||'')+'</div>').join('')+'</div></div>';
   const modes='<div class="chips">'+[['rolling','Nächste 12 Monate'],['this','Dieses Jahr'],['next','Nächstes Jahr']].map(m=>'<button class="chip'+(gm===m[0]?' on':'')+'" data-gmode="'+m[0]+'">'+m[1]+'</button>').join('')+'</div>';
-  const absLink='<p class="hint" style="margin:8px 0 0"><button class="link" data-absnew="1">Abwesenheit eintragen</button></p>';
+  const absLink='<p class="hint" style="margin:8px 0 0"><button class="link" data-absnew="1">Abwesenheit eintragen</button> · <button class="link" data-ics="1">In den Kalender übertragen</button></p>';
   const clashHtml=absList().map(a=>{const n=clashTasks(a).length;return n?'<div class="banner"><b>'+n+(n===1?' Aufgabe liegt':' Aufgaben liegen')+' in deiner Abwesenheit ('+fmt(a.von).slice(0,6)+' bis '+fmt(a.bis).slice(0,6)+')</b><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-abshift="'+a.id+'">Auf danach verschieben</button></div></div>':'';}).join('');
   const legend='<div class="glegend"><span><i style="background:var(--accent)"></i>Haus</span>'+(gOn?'<span><i style="background:var(--garten)"></i>Garten</span>':'')+'<span><i style="background:var(--late)"></i>überfällig</span>'+(absList().some(a=>a.bis>=start&&a.von<=lastIncl)?'<span><i style="background:color-mix(in srgb,var(--muted) 35%,transparent)"></i>Abwesenheit</span>':'')+'<span>helle Balken: geplante Wiederholungen</span></div>';
   const peak=mx?'<p class="hint" style="margin:8px 0 0">Am meisten zu tun: '+MONL[(sd.getMonth()+cnt.indexOf(mx))%12]+' ('+mx+' '+(mx===1?'Aufgabe':'Aufgaben')+').</p>':'';
