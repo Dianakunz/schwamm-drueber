@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.10 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.11 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -209,7 +209,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.10 vom 29.10.2026</p>
+      <p class="hint">Version 1.11 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -233,6 +233,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
     </details>
     <details class="opt"><summary>Daten sichern und zurücksetzen</summary>
       <p class="hint">Alle Aufgaben und die Historie werden nur in diesem Browser auf diesem Gerät gespeichert. Mit einer Sicherung kannst du sie aufbewahren oder auf ein anderes Gerät übertragen.</p>
+      <p class="hint" id="bk-info"></p>
       <button id="btn-export">Sicherung speichern</button>
       <button id="btn-import">Sicherung laden</button>
       <input id="file-import" type="file" accept="application/json,.json" hidden>
@@ -456,6 +457,16 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <ul>
 <li>Alle Daten liegen nur in diesem Browser auf diesem Gerät. Sichere sie regelmäßig unter Optionen und lade die Sicherung bei Bedarf wieder.</li>
 <li>Tipp fürs Handy: Im Browsermenü „Zum Startbildschirm hinzufügen“, dann öffnet sich die App wie eine normale App.</li>
+</ul>
+<h4>Sicherungs-Erinnerung</h4>
+<ul>
+<li>Ist die letzte Sicherung 30 Tage her (oder gab es noch keine), erscheint oben im Reiter Haus ein Hinweis mit „Jetzt sichern“. „In 7 Tage erinnern“ schiebt ihn um eine Woche.</li>
+<li>Unter „Optionen“ steht, wann du zuletzt gesichert hast.</li>
+</ul>
+<h4>Ohne Internet nutzen</h4>
+<ul>
+<li>Hast du die App einmal mit Internet geöffnet, startet sie danach auch ohne Netz, zum Beispiel im Keller oder im Garten. Ist Internet da, lädt sie sich bei jedem Start die neueste Version.</li>
+<li>Das funktioniert nur, wenn die Datei „sw.js“ zusammen mit der App veröffentlicht ist.</li>
 </ul>
 <h4>Plan teilen (Optionen)</h4>
 <ul>
@@ -797,7 +808,7 @@ function render(){
   if(sicht!=='liste'&&haus.length)renderPlan('hlist',keepH,sicht);
   else renderTasks('hlist',keepH,(hB!=='Alle'||hR!=='Alle')?'Keine Aufgaben für diesen Filter.':'');
   if(!haus.length)$('#hlist').insertAdjacentHTML('beforeend',planBox('haus'));
-  $('#gbanner').innerHTML=absHint()+((!gOn&&state.settings.gartenFrage!==false)?'<div class="banner"><b>🌱 Gehört ein Garten dazu?</b><span>Dann kannst du Rasen, Beete, Hecken und mehr in einem eigenen Reiter planen.</span><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-gon="1">Garten aktivieren</button><button class="link" data-gno="1">Nicht mehr fragen</button></div></div>':'');
+  $('#gbanner').innerHTML=bkBanner()+absHint()+((!gOn&&state.settings.gartenFrage!==false)?'<div class="banner"><b>🌱 Gehört ein Garten dazu?</b><span>Dann kannst du Rasen, Beete, Hecken und mehr in einem eigenen Reiter planen.</span><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-gon="1">Garten aktivieren</button><button class="link" data-gno="1">Nicht mehr fragen</button></div></div>':'');
   if(gOn){
     const gt=act.filter(t=>t.bereich==='Garten');
     const cats=[...new Set(gt.map(t=>t.unter).filter(Boolean))].sort((a,b)=>{const i=UNTER.indexOf(a),j=UNTER.indexOf(b);return (i<0?99:i)-(j<0?99:j)||a.localeCompare(b,'de');});
@@ -922,12 +933,14 @@ $('#aufgaben').addEventListener('click',onTaskClick);
 $('#glist').addEventListener('click',onTaskClick);
 $('#jahr').addEventListener('click',e=>{if(e.target.closest('[data-gfreq]')){ganttFreq=!ganttFreq;renderGantt();return;}onTaskClick(e);});
 document.addEventListener('click',e=>{
-  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew],[data-sicht],[data-ics]');if(!c)return;
+  const c=e.target.closest('[data-hb],[data-hr],[data-gc],[data-goto],[data-plan],[data-gmode],[data-hmode],[data-gon],[data-gno],[data-abshift],[data-absdel],[data-absnew],[data-sicht],[data-ics],[data-bkup],[data-bklater]');if(!c)return;
   if(c.dataset.gon!==undefined){state.settings.garten=true;save();applySettings();render();showTab('garten');toast('Gartenbereich aktiviert',false);return;}
   if(c.dataset.gno!==undefined){state.settings.gartenFrage=false;save();render();toast('Okay, ich frage nicht mehr. Den Garten findest du jederzeit unter „Optionen“.',false);return;}
   if(c.dataset.gmode!==undefined){state.settings.gantt=c.dataset.gmode;save();render();return;}
   if(c.dataset.hmode!==undefined){state.settings.hist=c.dataset.hmode;save();render();return;}
   if(c.dataset.sicht!==undefined){state.settings.sicht=c.dataset.sicht;save();render();return;}
+  if(c.dataset.bkup!==undefined){$('#btn-export').click();return;}
+  if(c.dataset.bklater!==undefined){const d=new Date();d.setDate(d.getDate()+7);state.settings.bkSnooze=iso(d);save();render();return;}
   if(c.dataset.ics!==undefined){openIcs();return;}
   if(c.dataset.absnew!==undefined){openAbs();return;}
   if(c.dataset.abshift!==undefined){const a=absList().find(x=>x.id===c.dataset.abshift);if(a)shiftClash(a);return;}
@@ -1440,6 +1453,7 @@ function applySettings(){
   $('#set-garten').checked=on;
   if(!on&&tab==='garten')showTab('aufgaben');
   state.einkauf=Array.isArray(state.einkauf)?state.einkauf:[];
+  bkInfo();
   const ek=!!state.settings.einkauf;
   $('#nav-einkauf').style.display=ek?'':'none';$('#set-ek').checked=ek;
   if(!ek&&tab==='einkauf')showTab('aufgaben');
@@ -1447,10 +1461,12 @@ function applySettings(){
 $('#set-garten').onchange=e=>{state.settings.garten=e.target.checked;save();applySettings();render();};
 
 $('#btn-export').onclick=()=>{
+  state.settings.lastBackup=today();state.settings.bkSnooze=null;save();
   const b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);
   a.download='haushalt-sicherung-'+today()+'.json';a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  bkInfo();render();toast('Sicherung gespeichert',false);
 };
 $('#btn-import').onclick=()=>$('#file-import').click();
 $('#file-import').onchange=e=>{
@@ -1507,6 +1523,24 @@ $('#file-plan').onchange=e=>{
   r.readAsText(f);e.target.value='';
 };
 
+function bkDays(){
+  const st=state.settings;
+  if(!st.bkSince){st.bkSince=today();save();}
+  const ref=st.lastBackup||st.bkSince;
+  return Math.floor((parse(today())-parse(ref))/86400000);
+}
+function bkBanner(){
+  const st=state.settings;
+  if(!state.tasks.length)return '';
+  const d=bkDays();
+  if(d<30||(st.bkSnooze&&st.bkSnooze>today()))return '';
+  const was=st.lastBackup?'Die letzte Sicherung ist '+d+' Tage her.':'Du hast noch keine Sicherung gespeichert.';
+  return '<div class="banner"><b>💾 Zeit für eine Sicherung</b><span>'+was+' Deine Daten liegen nur auf diesem Gerät.</span><div class="brow"><button class="plan-btn" style="width:auto;padding:9px 14px" data-bkup="1">Jetzt sichern</button><button class="link" data-bklater="1">In 7 Tagen erinnern</button></div></div>';
+}
+function bkInfo(){
+  const st=state.settings;
+  $('#bk-info').textContent=st.lastBackup?'Letzte Sicherung: '+fmt(st.lastBackup)+'.':'Noch keine Sicherung gespeichert.';
+}
 function renderEinkauf(){
   const l=state.einkauf||[],open=l.filter(x=>!x.done),done=l.filter(x=>x.done);
   const row=x=>'<div class="cr'+(x.done?' done':'')+'"><label><input type="checkbox" data-ek="'+x.id+'"'+(x.done?' checked':'')+'><span>'+esc(x.text)+'</span></label><button type="button" class="mini mute" data-ekdel="'+x.id+'" aria-label="Eintrag löschen">✕</button></div>';
@@ -1532,6 +1566,7 @@ $('#ek-list').addEventListener('click',e=>{
 $('#set-ek').onchange=e=>{state.settings.einkauf=e.target.checked;save();applySettings();render();};
 
 load();applySettings();render();
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 $('#hlogo').innerHTML=LOGO;$('#wlogo').innerHTML=LOGO;
 {const lk=document.createElement('link');lk.rel='icon';lk.href='data:image/svg+xml,'+encodeURIComponent(LOGO);document.head.appendChild(lk);}
 function showWelcome(){$('#welcome').hidden=false;}
