@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.13.1 vom 01.11.2026 -->
+<!-- Schwamm drüber, Version 1.13.3 vom 01.11.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -184,14 +184,14 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
 #help{max-height:88vh;overflow:auto}
 #help .hhead{position:sticky;top:-16px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-16px -16px 8px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line)}
 #help .hhead h3{margin:0}
-#help-x{padding:7px 12px}
+#help-x{padding:0;width:34px;height:34px;border-radius:50%;font-size:1rem;line-height:1}
 #help .toc{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
 #help .toc button{border:1px solid var(--line);background:var(--card);color:var(--accent);border-radius:16px;padding:5px 10px;font-size:.85rem}
 #help h4{scroll-margin-top:60px}
 #help h4{margin:14px 0 4px;font-size:1rem}
 #help ul{margin:0;padding-left:20px}
 #help li{margin:3px 0;font-size:.95rem}
-#btn-opt+.helpbtn{margin-left:0}
+#btn-help+.helpbtn{margin-left:0}
 #btn-opt.on{background:var(--accent);color:var(--on-accent)}
 .helpbtn{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;padding:0;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--accent);font-weight:700;font-size:1.1rem}
 details.opt{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:0 14px 8px}
@@ -210,7 +210,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
 </style>
 </head>
 <body>
-<header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1><button id="btn-opt" class="helpbtn" aria-label="Optionen" title="Optionen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button id="btn-help" class="helpbtn" aria-label="Anleitung" title="Anleitung">?</button></header>
+<header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1><button id="btn-help" class="helpbtn" aria-label="Anleitung" title="Anleitung">?</button><button id="btn-opt" class="helpbtn" aria-label="Optionen" title="Optionen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></header>
 <main>
   <section id="aufgaben" class="panel on"><div id="gbanner"></div><div id="hview" class="chips"></div><div id="hchips" class="chips"></div><div id="hrooms" class="chips"></div><div id="hlist"></div></section>
   <section id="historie" class="panel"></section>
@@ -220,7 +220,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <section id="daten" class="panel data"><h2 class="opth" style="margin-top:12px">Optionen</h2>
     <details class="opt"><summary>Über die App</summary>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.13.1 vom 01.11.2026. Die Anleitung öffnest du mit dem Fragezeichen oben rechts.</p>
+      <p class="hint">Version 1.13.3 vom 01.11.2026. Die Anleitung öffnest du mit dem Fragezeichen oben rechts.</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -303,7 +303,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <div id="xd-list"></div>
   <div class="btns"><button type="button" id="xd-no">Abbrechen</button><button type="button" class="primary" id="xd-ok">Erledigt</button></div>
 </dialog>
-<dialog id="help"><div class="hhead"><h3 tabindex="-1" autofocus>Anleitung</h3><button type="button" id="help-x" aria-label="Anleitung schließen">✕ Schließen</button></div><div id="help-toc" class="toc"></div><div id="help-body"></div><div class="btns"><button type="button" class="primary" id="help-ok">Schließen</button></div></dialog>
+<dialog id="help"><div class="hhead"><h3 tabindex="-1" autofocus>Anleitung</h3><button type="button" id="help-x" aria-label="Anleitung schließen">✕</button></div><div id="help-toc" class="toc"></div><div id="help-body"></div></dialog>
 <dialog id="ask"><p id="ask-msg"></p><div class="btns"><button type="button" id="ask-no">Abbrechen</button><button type="button" class="primary" id="ask-yes">OK</button></div></dialog>
 <dialog id="he"><form id="hef">
   <h3 id="he-title" tabindex="-1" autofocus>Erledigt-Eintrag</h3>
@@ -395,7 +395,7 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen, dem Zahnrad oben rechts). Filter nach Kategorie, mit denselben Ansichten wie im Haus.</li>
 <li><b>Jahr:</b> Übersicht über die nächsten 12 Monate oder ein Kalenderjahr, Haus und Garten in zwei Farben.</li>
 <li><b>Historie:</b> was du erledigt hast, mit Diagrammen.</li>
-<li><b>Zahnrad oben rechts (Optionen):</b> Garten, Erinnerungen, Abwesenheit, Darstellung, Einkaufsliste, Sicherung, Plan teilen. Nochmal auf das Zahnrad tippen bringt dich zurück. Das Fragezeichen daneben öffnet diese Anleitung; oben stehen die Abschnitte zum Antippen, und „Schließen“ bleibt beim Scrollen oben sichtbar.</li>
+<li><b>Zahnrad oben rechts (Optionen):</b> Garten, Erinnerungen, Abwesenheit, Darstellung, Einkaufsliste, Sicherung, Plan teilen. Nochmal auf das Zahnrad tippen bringt dich zurück. Das Fragezeichen links daneben öffnet diese Anleitung; oben stehen die Abschnitte zum Antippen, und das ✕ oben rechts bleibt beim Scrollen sichtbar.</li>
 <li><b>Einkauf:</b> optional, erscheint nach dem Einschalten unter Optionen.</li>
 </ul>
 <h4>Aufgabe anlegen</h4>
@@ -1615,7 +1615,7 @@ $('#help-toc').addEventListener('click',e=>{const b=e.target.closest('[data-hh]'
 $('#help-x').onclick=()=>$('#help').close();
 $('#btn-opt').onclick=()=>showTab(tab==='daten'?lastTab:'daten');
 $('#btn-help').onclick=openHelp;$('#w-help').onclick=openHelp;
-$('#help-ok').onclick=()=>$('#help').close();
+
 $('#xd-no').onclick=()=>$('#xd').close();
 $('#xd-ok').onclick=()=>{
   const only=[...document.querySelectorAll('#xd-list input:checked')].map(i=>xdEx[+i.dataset.x]);
