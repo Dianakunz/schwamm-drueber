@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.12 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.13 vom 29.10.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -185,7 +185,9 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
 #help h4{margin:14px 0 4px;font-size:1rem}
 #help ul{margin:0;padding-left:20px}
 #help li{margin:3px 0;font-size:.95rem}
-.helpbtn{margin-left:auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--accent);font-weight:700;font-size:1.1rem}
+#btn-opt+.helpbtn{margin-left:0}
+#btn-opt.on{background:var(--accent);color:var(--on-accent)}
+.helpbtn{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;padding:0;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--accent);font-weight:700;font-size:1.1rem}
 details.opt{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:0 14px 8px}
 details.opt>summary{padding:14px 0 8px;font-weight:700;cursor:pointer;list-style:none}
 details.opt>summary::-webkit-details-marker{display:none}
@@ -202,18 +204,18 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
 </style>
 </head>
 <body>
-<header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1><button id="btn-help" class="helpbtn" aria-label="Anleitung">?</button></header>
+<header class="brand"><span id="hlogo"></span><h1>Schwamm drüber</h1><button id="btn-opt" class="helpbtn" aria-label="Optionen" title="Optionen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button id="btn-help" class="helpbtn" aria-label="Anleitung" title="Anleitung">?</button></header>
 <main>
   <section id="aufgaben" class="panel on"><div id="gbanner"></div><div id="hview" class="chips"></div><div id="hchips" class="chips"></div><div id="hrooms" class="chips"></div><div id="hlist"></div></section>
   <section id="historie" class="panel"></section>
   <section id="garten" class="panel"><div id="gview" class="chips"></div><div id="gchips" class="chips"></div><div id="glist"></div></section>
   <section id="jahr" class="panel"></section>
   <section id="einkauf" class="panel ek"><form id="ek-form"><input id="ek-in" list="ek-names" placeholder="Was soll auf die Liste?" maxlength="80" autocomplete="off" aria-label="Neuer Eintrag"><datalist id="ek-names"></datalist><button class="primary">Hinzufügen</button></form><div id="ek-list"></div></section>
-  <section id="daten" class="panel data">
+  <section id="daten" class="panel data"><h2 class="opth" style="margin-top:12px">Optionen</h2>
     <details class="opt"><summary>Anleitung und Hilfe</summary>
       <button id="btn-help2">Anleitung lesen</button>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.12 vom 29.10.2026</p>
+      <p class="hint">Version 1.13 vom 29.10.2026</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -311,7 +313,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <p class="wsub2">Haus und Garten im Rhythmus</p>
   <button id="w-go">Jetzt loslegen</button>
   <button class="link" id="w-help" style="display:block;margin:0 auto 14px">Kurzanleitung ansehen</button>
-  <p class="hint">Deine Daten bleiben auf diesem Gerät. Eine Sicherung findest du unter „Optionen“.</p>
+  <p class="hint">Deine Daten bleiben auf diesem Gerät. Eine Sicherung findest du unter „Optionen“ (Zahnrad oben rechts).</p>
 </div></div>
 <div id="toast"><span id="toast-text"></span><button id="toast-undo">Rückgängig</button></div>
 <nav>
@@ -320,7 +322,6 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <button data-tab="jahr">Jahr</button>
   <button data-tab="einkauf" id="nav-einkauf" style="display:none">Einkauf</button>
   <button data-tab="historie">Historie</button>
-  <button data-tab="daten">Optionen</button>
 </nav>
 
 <dialog id="dlg">
@@ -386,10 +387,10 @@ const WKEY='haushalt-welcome-v1';
 const HELP_HTML=`<h4>Die Reiter</h4>
 <ul>
 <li><b>Haus:</b> alle Aufgaben für Wohnung, Keller und Haus außen. Oben filterst du nach Bereich und Raum und wechselst die Ansicht (siehe unten).</li>
-<li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen). Filter nach Kategorie, mit denselben Ansichten wie im Haus.</li>
+<li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen, dem Zahnrad oben rechts). Filter nach Kategorie, mit denselben Ansichten wie im Haus.</li>
 <li><b>Jahr:</b> Übersicht über die nächsten 12 Monate oder ein Kalenderjahr, Haus und Garten in zwei Farben.</li>
 <li><b>Historie:</b> was du erledigt hast, mit Diagrammen.</li>
-<li><b>Optionen:</b> Anleitung, Garten, Erinnerungen, Abwesenheit, Einkaufsliste, Sicherung, Plan teilen.</li>
+<li><b>Zahnrad oben rechts (Optionen):</b> Anleitung, Garten, Erinnerungen, Abwesenheit, Darstellung, Einkaufsliste, Sicherung, Plan teilen. Nochmal auf das Zahnrad tippen bringt dich zurück. Das Fragezeichen daneben öffnet die Anleitung.</li>
 <li><b>Einkauf:</b> optional, erscheint nach dem Einschalten unter Optionen.</li>
 </ul>
 <h4>Aufgabe anlegen</h4>
@@ -1450,8 +1451,11 @@ function maybeRemind(force){
   try{localStorage.setItem(RKEY,today());}catch(e){}
   $('#rem').showModal();
 }
+let lastTab='aufgaben';
 function showTab(name){
+  if(name!=='daten')lastTab=name;
   tab=name;
+  $('#btn-opt').classList.toggle('on',tab==='daten');
   document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x.dataset.tab===tab));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===tab));
   $('#fab').style.display=(tab==='aufgaben'||tab==='garten')?'':'none';
@@ -1596,6 +1600,7 @@ function showWelcome(){$('#welcome').hidden=false;}
 $('#w-go').onclick=()=>{try{localStorage.setItem(WKEY,'1');}catch(e){}$('#welcome').hidden=true;};
 $('#btn-welcome').onclick=showWelcome;
 function openHelp(){$('#help-body').innerHTML=HELP_HTML;$('#help').showModal();$('#help').scrollTop=0;}
+$('#btn-opt').onclick=()=>showTab(tab==='daten'?lastTab:'daten');
 $('#btn-help').onclick=openHelp;$('#btn-help2').onclick=openHelp;$('#w-help').onclick=openHelp;
 $('#help-ok').onclick=()=>$('#help').close();
 $('#xd-no').onclick=()=>$('#xd').close();
