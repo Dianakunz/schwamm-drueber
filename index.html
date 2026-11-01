@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.13.3 vom 01.11.2026 -->
+<!-- Schwamm drüber, Version 1.13.4 vom 01.11.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -218,10 +218,6 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <section id="jahr" class="panel"></section>
   <section id="einkauf" class="panel ek"><form id="ek-form"><input id="ek-in" list="ek-names" placeholder="Was soll auf die Liste?" maxlength="80" autocomplete="off" aria-label="Neuer Eintrag"><datalist id="ek-names"></datalist><button class="primary">Hinzufügen</button></form><div id="ek-list"></div></section>
   <section id="daten" class="panel data"><h2 class="opth" style="margin-top:12px">Optionen</h2>
-    <details class="opt"><summary>Über die App</summary>
-      <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.13.3 vom 01.11.2026. Die Anleitung öffnest du mit dem Fragezeichen oben rechts.</p>
-    </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
       <label class="chk"><input type="checkbox" id="set-garten">Gartenbereich aktivieren</label>
@@ -262,6 +258,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
       <button id="btn-wipe" class="danger">Alle Daten löschen</button>
       <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
     </details>
+    <p class="hint" style="text-align:center;margin-top:18px">Version 1.13.4 vom 01.11.2026</p>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
@@ -1603,7 +1600,7 @@ $('#hlogo').innerHTML=LOGO;$('#wlogo').innerHTML=LOGO;
 {const lk=document.createElement('link');lk.rel='icon';lk.href='data:image/svg+xml,'+encodeURIComponent(LOGO);document.head.appendChild(lk);}
 function showWelcome(){$('#welcome').hidden=false;}
 $('#w-go').onclick=()=>{try{localStorage.setItem(WKEY,'1');}catch(e){}$('#welcome').hidden=true;};
-$('#btn-welcome').onclick=showWelcome;
+
 function openHelp(){
   $('#help-body').innerHTML=HELP_HTML;
   const hs=[...document.querySelectorAll('#help-body h4')];
