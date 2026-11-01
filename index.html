@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.13 vom 29.10.2026 -->
+<!-- Schwamm drüber, Version 1.13.1 vom 01.11.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -182,6 +182,12 @@ button.glabel{border-top:0;border-bottom:0;border-left:0;font:inherit;font-size:
 .gabs{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--muted) 22%,transparent);pointer-events:none}
 .gbar{z-index:1}
 #help{max-height:88vh;overflow:auto}
+#help .hhead{position:sticky;top:-16px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-16px -16px 8px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+#help .hhead h3{margin:0}
+#help-x{padding:7px 12px}
+#help .toc{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+#help .toc button{border:1px solid var(--line);background:var(--card);color:var(--accent);border-radius:16px;padding:5px 10px;font-size:.85rem}
+#help h4{scroll-margin-top:60px}
 #help h4{margin:14px 0 4px;font-size:1rem}
 #help ul{margin:0;padding-left:20px}
 #help li{margin:3px 0;font-size:.95rem}
@@ -212,10 +218,9 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <section id="jahr" class="panel"></section>
   <section id="einkauf" class="panel ek"><form id="ek-form"><input id="ek-in" list="ek-names" placeholder="Was soll auf die Liste?" maxlength="80" autocomplete="off" aria-label="Neuer Eintrag"><datalist id="ek-names"></datalist><button class="primary">Hinzufügen</button></form><div id="ek-list"></div></section>
   <section id="daten" class="panel data"><h2 class="opth" style="margin-top:12px">Optionen</h2>
-    <details class="opt"><summary>Anleitung und Hilfe</summary>
-      <button id="btn-help2">Anleitung lesen</button>
+    <details class="opt"><summary>Über die App</summary>
       <button id="btn-welcome">Startseite ansehen</button>
-      <p class="hint">Version 1.13 vom 29.10.2026</p>
+      <p class="hint">Version 1.13.1 vom 01.11.2026. Die Anleitung öffnest du mit dem Fragezeichen oben rechts.</p>
     </details>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -298,7 +303,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <div id="xd-list"></div>
   <div class="btns"><button type="button" id="xd-no">Abbrechen</button><button type="button" class="primary" id="xd-ok">Erledigt</button></div>
 </dialog>
-<dialog id="help"><h3 tabindex="-1" autofocus>Anleitung</h3><div id="help-body"></div><div class="btns"><button type="button" class="primary" id="help-ok">Schließen</button></div></dialog>
+<dialog id="help"><div class="hhead"><h3 tabindex="-1" autofocus>Anleitung</h3><button type="button" id="help-x" aria-label="Anleitung schließen">✕ Schließen</button></div><div id="help-toc" class="toc"></div><div id="help-body"></div><div class="btns"><button type="button" class="primary" id="help-ok">Schließen</button></div></dialog>
 <dialog id="ask"><p id="ask-msg"></p><div class="btns"><button type="button" id="ask-no">Abbrechen</button><button type="button" class="primary" id="ask-yes">OK</button></div></dialog>
 <dialog id="he"><form id="hef">
   <h3 id="he-title" tabindex="-1" autofocus>Erledigt-Eintrag</h3>
@@ -390,7 +395,7 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen, dem Zahnrad oben rechts). Filter nach Kategorie, mit denselben Ansichten wie im Haus.</li>
 <li><b>Jahr:</b> Übersicht über die nächsten 12 Monate oder ein Kalenderjahr, Haus und Garten in zwei Farben.</li>
 <li><b>Historie:</b> was du erledigt hast, mit Diagrammen.</li>
-<li><b>Zahnrad oben rechts (Optionen):</b> Anleitung, Garten, Erinnerungen, Abwesenheit, Darstellung, Einkaufsliste, Sicherung, Plan teilen. Nochmal auf das Zahnrad tippen bringt dich zurück. Das Fragezeichen daneben öffnet die Anleitung.</li>
+<li><b>Zahnrad oben rechts (Optionen):</b> Garten, Erinnerungen, Abwesenheit, Darstellung, Einkaufsliste, Sicherung, Plan teilen. Nochmal auf das Zahnrad tippen bringt dich zurück. Das Fragezeichen daneben öffnet diese Anleitung; oben stehen die Abschnitte zum Antippen, und „Schließen“ bleibt beim Scrollen oben sichtbar.</li>
 <li><b>Einkauf:</b> optional, erscheint nach dem Einschalten unter Optionen.</li>
 </ul>
 <h4>Aufgabe anlegen</h4>
@@ -1599,9 +1604,17 @@ $('#hlogo').innerHTML=LOGO;$('#wlogo').innerHTML=LOGO;
 function showWelcome(){$('#welcome').hidden=false;}
 $('#w-go').onclick=()=>{try{localStorage.setItem(WKEY,'1');}catch(e){}$('#welcome').hidden=true;};
 $('#btn-welcome').onclick=showWelcome;
-function openHelp(){$('#help-body').innerHTML=HELP_HTML;$('#help').showModal();$('#help').scrollTop=0;}
+function openHelp(){
+  $('#help-body').innerHTML=HELP_HTML;
+  const hs=[...document.querySelectorAll('#help-body h4')];
+  hs.forEach((h,i)=>{h.id='hh'+i;});
+  $('#help-toc').innerHTML=hs.map((h,i)=>'<button type="button" data-hh="hh'+i+'">'+esc(h.textContent.replace(/\s*\(.*\)$/,''))+'</button>').join('');
+  $('#help').showModal();$('#help').scrollTop=0;
+}
+$('#help-toc').addEventListener('click',e=>{const b=e.target.closest('[data-hh]');if(b)document.getElementById(b.dataset.hh).scrollIntoView({block:'start'});});
+$('#help-x').onclick=()=>$('#help').close();
 $('#btn-opt').onclick=()=>showTab(tab==='daten'?lastTab:'daten');
-$('#btn-help').onclick=openHelp;$('#btn-help2').onclick=openHelp;$('#w-help').onclick=openHelp;
+$('#btn-help').onclick=openHelp;$('#w-help').onclick=openHelp;
 $('#help-ok').onclick=()=>$('#help').close();
 $('#xd-no').onclick=()=>$('#xd').close();
 $('#xd-ok').onclick=()=>{
