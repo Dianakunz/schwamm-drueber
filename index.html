@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.13.5 vom 02.11.2026 -->
+<!-- Schwamm drüber, Version 1.14.2 vom 21.11.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -269,7 +269,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
       <button id="btn-wipe" class="danger">Alle Daten löschen</button>
       <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
     </details>
-    <p class="hint" style="text-align:center;margin-top:18px">Version 1.13.5 vom 02.11.2026</p>
+    <p class="hint" style="text-align:center;margin-top:18px">Version 1.14.2 vom 21.11.2026</p>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
@@ -395,7 +395,7 @@ const KEY='haushalt-v1';
 const BEREICHE={'Im Haus':'Küche, Bäder, Zimmer, Flur','Keller und Nebengebäude':'Keller, Garage, Werkstatt, Schuppen','Rund ums Haus':'Dachrinne, Hauseingang, Einfahrt, Fugen','Garten':'Rasen, Beete, Bäume und Sträucher'};
 const BK={H:'Im Haus',K:'Keller und Nebengebäude',R:'Rund ums Haus',G:'Garten'};
 const UNTER=['Rasen','Hecken','Obstbäume','Beeren','Gemüse','Kräuter','Bäume und Sträucher','Allgemein'];
-const RASTER=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln'];
+const RASTER=['Hauptuntersuchung (TÜV) fürs Auto','Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln'];
 const WKEY='haushalt-welcome-v1';
 const HELP_HTML=`<h4>Die Reiter</h4>
 <ul>
@@ -506,7 +506,7 @@ const LOGO='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-h
 const GRUND=['Saugen','Wischen','Staub wischen','Küche putzen','Bad putzen','Wäsche waschen','Einkaufen','Bettwäsche wechseln','Handtücher wechseln','Mülleimer reinigen','Blumen gießen','Lichtschalter und Türgriffe desinfizieren','Couch absaugen','Spülmaschine reinigen','Waschmaschine reinigen','Küchenabzug saubermachen','Staubsauger reinigen','Wasserkocher entkalken','Küchenvorräte überprüfen und aussortieren','Fenster putzen','Hauseingang reinigen','Rasen mähen','Rasen düngen','Bäume und Sträucher schneiden','Gartenmöbel winterfest machen','Wasserleitungen im Garten winterfest machen','Gartengeräte reinigen und pflegen'];
 const ALT={'Wohnbereich':'Im Haus','Haus außen':'Rund ums Haus','Außenanlagen':'Garten'};
 const BICON={'Im Haus':'🏠','Keller und Nebengebäude':'📦','Rund ums Haus':'🏡','Garten':'🌳'};
-const ICONMAP=[['schnee','⛄'],['terrasse','☀️'],['winterfest','❄️'],['frostempfindliche','❄️'],['herbst abräumen','🍂'],['gartenmöbel','🪑'],['wasserleitung','🚰'],['gartengeräte','🛠️'],['kübelpflanzen','🪴'],['gewächshaus','🏡'],['hochbeet','🥕'],['beete','🥕'],['beerensträucher','🫐'],['erdbeer','🍓'],['obstbäume','🍎'],['kompost','♻️'],['hecke','🌲'],['kräuter','🌿'],['rasen','🌱'],['vertikutieren','🧹'],['düngen','🌾'],['bettwäsche','🛏️'],['couch','🛋️'],['kissen','🛋️'],['waschmaschine','🧺'],['wäsche','🧺'],['handtüch','🧺'],['vorhänge','🧺'],['esstisch','🍽️'],['spülmaschine','🧼'],['kaffee','☕'],['milchsystem','☕'],['wasserkocher','🫖'],['backofen','🔥'],['mikrowelle','🔥'],['airfryer','🔥'],['abzug','💨'],['vorräte','🥫'],['küche','🍴'],['bad','🛁'],['fenster','🪟'],['spiegel','🪞'],['blume','🌷'],['einkauf','🛒'],['mülleimer','🗑️'],['rauchmelder','🔔'],['heizung','🌡️'],['apotheke','💊'],['dachrinne','🏠'],['hauseingang','🚪'],['einfahrt','🚪'],['unkraut','🌿'],['baum','🌳'],['bäume','🌳'],['garage','🚗'],['werkstatt','🔧'],['schuppen','🏚️'],['licht','🧴'],['schränke','🗄️'],['schrank','🗄️'],['fußleiste','🪶'],['staub wischen','🪶'],['wisch','🧽'],['staubsauger','🌀'],['staub','🪶'],['saug','🧹'],['keller','📦']];
+const ICONMAP=[['verbandskasten','💊'],['reifen wechseln','🚗'],['hauptuntersuchung','🚗'],['balkon oder terrasse winterfest','❄️'],['auto ','🚗'],['auto-','🚗'],['schnee','⛄'],['terrasse','☀️'],['winterfest','❄️'],['frostempfindliche','❄️'],['herbst abräumen','🍂'],['gartenmöbel','🪑'],['wasserleitung','🚰'],['gartengeräte','🛠️'],['kübelpflanzen','🪴'],['gewächshaus','🏡'],['hochbeet','🥕'],['beete','🥕'],['beerensträucher','🫐'],['erdbeer','🍓'],['obstbäume','🍎'],['kompost','♻️'],['hecke','🌲'],['kräuter','🌿'],['rasen','🌱'],['vertikutieren','🧹'],['düngen','🌾'],['bettwäsche','🛏️'],['couch','🛋️'],['kissen','🛋️'],['waschmaschine','🧺'],['wäsche','🧺'],['handtüch','🧺'],['vorhänge','🧺'],['esstisch','🍽️'],['spülmaschine','🧼'],['kaffee','☕'],['milchsystem','☕'],['wasserkocher','🫖'],['backofen','🔥'],['mikrowelle','🔥'],['airfryer','🔥'],['abzug','💨'],['vorräte','🥫'],['küche','🍴'],['bad','🛁'],['fenster','🪟'],['spiegel','🪞'],['blume','🌷'],['einkauf','🛒'],['mülleimer','🗑️'],['rauchmelder','🔔'],['heizung','🌡️'],['apotheke','💊'],['dachrinne','🏠'],['hauseingang','🚪'],['einfahrt','🚪'],['unkraut','🌿'],['baum','🌳'],['bäume','🌳'],['garage','🚗'],['werkstatt','🔧'],['schuppen','🏚️'],['licht','🧴'],['schränke','🗄️'],['schrank','🗄️'],['fußleiste','🪶'],['staub wischen','🪶'],['wisch','🧽'],['staubsauger','🌀'],['staub','🪶'],['saug','🧹'],['keller','📦']];
 /* Vorschlagsliste: [Name, Bereich, Art, n, Einheit, Startmonat des guten Zeitfensters (0 = egal), Tipp] */
 const W='wiederkehrend',O='ohne';
 const KATALOG=[
@@ -543,6 +543,13 @@ const KATALOG=[
 ['Dachrinnen reinigen','R',W,6,'Monate',11,'Ein- bis zweimal im Jahr, wichtigster Termin im November nach dem Laubfall. Nur mit sicherer Leiter oder vom Fachbetrieb.'],
 ['Hauseingang reinigen','R',W,1,'Monate',0,'Einmal im Monat gründlich fegen und feucht wischen, zwischendurch bei Bedarf kurz Schmutz wegfegen. Im Herbst wegen Laub öfter.'],
 ['Einfahrt sauber machen','R',W,6,'Monate',4,'Im Frühjahr kehren oder abspritzen, im Herbst Laub entfernen. Trockenen Tag wählen.'],
+['Balkon oder Terrasse gründlich reinigen','R',W,12,'Monate',4,'Im Frühjahr Boden, Geländer und Möbel abschrubben, Abläufe freimachen und Pflanzgefäße vorbereiten.'],
+['Balkon oder Terrasse winterfest machen','R',W,12,'Monate',10,'Im Herbst Laub und Schmutz entfernen, Abläufe freihalten, Möbel und Polster einlagern oder abdecken, Wasseranschlüsse außen entleeren.'],
+['Auto-Check (Öl, Reifendruck, Scheibenwasser)','R',W,1,'Monate',0,'Einmal im Monat Ölstand und Reifendruck laut Betriebsanleitung prüfen und Scheibenwasser bei Bedarf auffüllen. Der ADAC empfiehlt, den Reifendruck sogar alle zwei Wochen zu kontrollieren; stelle den Rhythmus dann entsprechend kürzer. Der Zusatz „Innen und außen waschen“ erscheint etwa alle 3 Monate.',null,[['Auto innen und außen waschen',3]]],
+['Hauptuntersuchung (TÜV) fürs Auto','R',W,24,'Monate',0,'Bei Pkw ist die erste Hauptuntersuchung drei Jahre nach der Erstzulassung fällig, danach alle zwei Jahre. Den Termin findest du auf der Prüfplakette am hinteren Kennzeichen. Trage ihn als festen Termin ein: Der nächste richtet sich nach dem Fälligkeitsdatum, nicht nach dem Tag der Prüfung.'],
+['Reifen wechseln (Sommer-/Winterreifen)','R',W,6,'Monate',10,'Im Herbst auf Winterreifen, im Frühjahr zurück auf Sommerreifen; Faustregel: von Oktober bis Ostern. In Deutschland gilt die Winterreifenpflicht bei winterlichen Straßenverhältnissen, nicht nach festem Datum. Beim Wechsel Profiltiefe und Alter der Reifen prüfen (gesetzlich mindestens 1,6 mm Profil).'],
+['Verbandskasten im Auto prüfen','R',W,12,'Monate',0,'Einmal im Jahr das Haltbarkeitsdatum der Inhalte (Pflaster, Verbandsmaterial) kontrollieren und Abgelaufenes oder Fehlendes ersetzen. Ein Verbandskasten muss im Auto mitgeführt werden.'],
+['Auto winterfest machen','R',W,12,'Monate',10,'Im Herbst Frostschutz ins Scheibenwasser füllen sowie Eiskratzer und Abdeckung ins Auto legen.'],
 ['Unkraut in den Fugen entfernen','R',W,12,'Monate',5,'Ein- bis zweimal im Jahr bei Einfahrt, Terrasse und Wegen: im Frühjahr, bei Bedarf noch einmal im Spätsommer, am besten nach Regen. Fugenkratzer oder Abflammgerät nutzen. Salz, Essig und Chemie sind auf befestigten Flächen nicht erlaubt.'],
 ['Rasen mähen','G',O,0,'',0,'Von April bis Oktober etwa wöchentlich bei Wachstum, nur bei trockenem Rasen und nicht kürzer als 4 cm. Hier zählt, wann und wie oft.','Rasen',null,[4,10]],
 ['Rasen düngen','G',W,6,'Monate',4,'Meist im Frühjahr (April) und im Herbst. Bei Wachstum und nicht bei Frost oder Trockenheit düngen, danach wässern.','Rasen'],
