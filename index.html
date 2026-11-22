@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.14.3 vom 22.11.2026 -->
+<!-- Schwamm drüber, Version 1.15 vom 22.11.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -269,7 +269,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
       <button id="btn-wipe" class="danger">Alle Daten löschen</button>
       <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
     </details>
-    <p class="hint" style="text-align:center;margin-top:18px">Version 1.14.3 vom 22.11.2026</p>
+    <p class="hint" style="text-align:center;margin-top:18px">Version 1.15 vom 22.11.2026</p>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
@@ -409,6 +409,7 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <h4>Aufgabe anlegen</h4>
 <ul>
 <li>Auf das Plus tippen, eine Aufgabe aus der Vorschlagsliste wählen (mit Suchfeld) und „Weiter“. Wiederholung und Termin sind Vorschläge und lassen sich ändern. Mit ✕ blendest du Vorschläge aus, die du nicht brauchst.</li>
+<li>Die Suche findet auch Teilaufgaben: Wer „Backofen“ eingibt, sieht „Küche putzen“ mit dem Hinweis „Enthält als Zusatz: Backofen reinigen“. Du musst dafür keine eigene Aufgabe anlegen.</li>
 <li>„Eigene Aufgabe“ legt eine Aufgabe ohne Vorschlag an.</li>
 <li>Ist ein Reiter noch leer, legt „Beispielplan erstellen“ ein Grundpaket typischer Aufgaben an.</li>
 </ul>
@@ -1116,20 +1117,22 @@ function buildCat(){
   const hid=state.settings.hidden||[];
   const q=($('#cat-q').value||'').trim().toLowerCase();
   let h='',nh=0,vis=new Set();
-  const eig=(state.settings.eigene||[]).map((e,i)=>({e,i})).filter(x=>(tab==='garten')===(x.e.bereich==='Garten')&&(!q||x.e.name.toLowerCase().includes(q))).sort((x,y)=>x.e.name.localeCompare(y.e.name,'de'));
+  const eig=(state.settings.eigene||[]).map((e,i)=>({e,i})).filter(x=>(tab==='garten')===(x.e.bereich==='Garten')&&(!q||x.e.name.toLowerCase().includes(q)||(x.e.extras||[]).some(z=>(z.text||'').toLowerCase().includes(q)))).sort((x,y)=>x.e.name.localeCompare(y.e.name,'de'));
   if(eig.length){h+='<h2>Eigene</h2>';eig.forEach(x=>{const v='e'+x.i;vis.add(v);
     h+='<div class="cr"><label><input type="radio" name="kat" value="'+v+'"'+(catSel===v?' checked':'')+'><span>'+esc(x.e.name)+'</span>'+(have.has(x.e.name)?'<small style="margin-left:auto">angelegt</small>':'')+'</label><button type="button" class="mini mute" data-del-eigen="'+x.i+'" aria-label="Eigenen Vorschlag entfernen">✕</button></div>';});}
   Object.keys(BEREICHE).filter(b=>tab==='garten'?b==='Garten':b!=='Garten').forEach(b=>{
     const all=KATALOG.map((k,i)=>({k,i})).filter(x=>BK[x.k[1]]===b);
     nh+=all.filter(x=>hid.includes(x.k[0])).length;
-    const items=all.filter(x=>!hid.includes(x.k[0])&&(!q||x.k[0].toLowerCase().includes(q)));
+    const hit=k=>!q||k[0].toLowerCase().includes(q);
+    const via=k=>q?(k[8]||[]).filter(z=>z[0].toLowerCase().includes(q)).map(z=>z[0]):[];
+    const items=all.filter(x=>!hid.includes(x.k[0])&&(hit(x.k)||via(x.k).length));
     items.sort((x,y)=>(b==='Garten'?UNTER.indexOf(x.k[7])-UNTER.indexOf(y.k[7]):0)||x.k[0].localeCompare(y.k[0],'de'));
     if(!items.length)return;
     let su='';
     h+='<h2>'+b+'</h2>';
     items.forEach(x=>{const k=x.k;vis.add(String(x.i));
       if(b==='Garten'&&k[7]!==su){su=k[7];h+='<div class="hint"><b>'+esc(su)+'</b></div>';}
-      h+='<div class="cr"><label><input type="radio" name="kat" value="'+x.i+'"'+(catSel===String(x.i)?' checked':'')+'><span>'+esc(k[0])+'</span>'+(have.has(k[0])?'<small style="margin-left:auto">angelegt</small>':'')+'</label><button type="button" class="mini mute" data-hide="'+x.i+'" aria-label="Aus der Liste entfernen">✕</button></div>';});
+      h+='<div class="cr"><label><input type="radio" name="kat" value="'+x.i+'"'+(catSel===String(x.i)?' checked':'')+'><span>'+esc(k[0])+(hit(k)?'':'<small style="display:block;margin:2px 0 0;color:var(--muted)">Enthält als Zusatz: '+esc(via(k).join(', '))+'</small>')+'</span>'+(have.has(k[0])?'<small style="margin-left:auto">angelegt</small>':'')+'</label><button type="button" class="mini mute" data-hide="'+x.i+'" aria-label="Aus der Liste entfernen">✕</button></div>';});
   });
   if(!vis.size)h+='<p class="empty">Nichts gefunden. Mit „Eigene Aufgabe“ legst du sie selbst an.</p>';
   if(nh)h+='<p class="hint">'+nh+' ausgeblendet. <button type="button" class="link" data-unhide="1">Alle wieder anzeigen</button></p>';
