@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.17 vom 22.11.2026 -->
+<!-- Schwamm drüber, Version 1.17.1 vom 22.11.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -280,7 +280,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
       <button id="btn-wipe" class="danger">Alle Daten löschen</button>
       <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
     </details>
-    <p class="hint" style="text-align:center;margin-top:18px">Version 1.17 vom 22.11.2026</p>
+    <p class="hint" style="text-align:center;margin-top:18px">Version 1.17.1 vom 22.11.2026</p>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
@@ -489,7 +489,7 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <ul>
 <li>Sammlung von Hausmitteln und Putztipps, zum Beispiel Entkalken mit Zitronensäure oder Reinigen mit Natron. Tippe auf einen Tipp, um ihn aufzuklappen. Unter den geprüften Tipps stehen die Quellen zum Nachlesen.</li>
 <li>Oben suchst du nach einem Stichwort oder wählst eine Kategorie.</li>
-<li>Bei Aufgaben mit passenden Tipps steht auf der Karte „💡 Tipps dazu“. Ein Tipp darauf öffnet nur die Tipps zu dieser Aufgabe; „Alle Tipps anzeigen“ zeigt wieder die ganze Sammlung.</li>
+<li>Bei Aufgaben mit passenden Tipps steht auf der Karte „💡 Tipps dazu“. Ein Tipp darauf öffnet nur die Tipps zu dieser Aufgabe. Mit „← Zurück zur Aufgabe“ landest du wieder dort, wo du warst; „Alle Tipps anzeigen“ zeigt die ganze Sammlung.</li>
 <li>„Eigenen Tipp hinzufügen“ legt einen eigenen Tipp an; er lässt sich bearbeiten und löschen und ist Teil der Sicherung.</li>
 <li>Bitte beachte die Hinweise unter „Sicherheit“: Zum Beispiel dürfen Säuren nie mit Chlorreinigern gemischt werden.</li>
 </ul>
@@ -1797,7 +1797,7 @@ function tipIdsFor(t){
 }
 function openTipFor(id){
   const t=state.tasks.find(x=>x.id===id);if(!t)return;
-  tpOnly={name:t.name,ids:tipIdsFor(t)};tpKat='Alle';$('#tp-q').value='';
+  tpOnly={name:t.name,ids:tipIdsFor(t),back:tab,y:window.scrollY};tpKat='Alle';$('#tp-q').value='';
   showTab('tipps');renderTipps();window.scrollTo(0,0);
 }
 function tpCard(t,own,open){
@@ -1814,7 +1814,7 @@ function renderTipps(){
   if(tpOnly){
     const l=tpOnly.ids.map(i=>all.find(t=>t.id===i)).filter(Boolean);
     $('#tp-chips').innerHTML='';
-    $('#tp-list').innerHTML='<p class="hint">Tipps zu „'+esc(tpOnly.name)+'“. <button type="button" class="link" data-tpall="1">Alle Tipps anzeigen</button></p>'+l.map((t,n)=>tpCard(t,t.own,n===0)).join('');
+    $('#tp-list').innerHTML='<p class="hint"><button type="button" class="link" data-tpback="1">← Zurück zur Aufgabe</button></p><p class="hint">Tipps zu „'+esc(tpOnly.name)+'“. <button type="button" class="link" data-tpall="1">Alle Tipps anzeigen</button></p>'+l.map((t,n)=>tpCard(t,t.own,n===0)).join('');
     return;
   }
   const kats=TKATS.filter(k=>all.some(t=>t.kat===k));
@@ -1836,7 +1836,7 @@ $('#tp-q').oninput=()=>{tpOnly=null;renderTipps();};
 $('#tp-new').onclick=()=>tpOpen(null);
 $('#tp-cancel').onclick=()=>$('#tp-dlg').close();
 $('#tp-chips').addEventListener('click',e=>{const b=e.target.closest('[data-tk]');if(b){tpOnly=null;tpKat=b.dataset.tk;renderTipps();}});
-$('#tp-list').addEventListener('click',e=>{if(e.target.closest('[data-tpall]')){tpOnly=null;renderTipps();return;}const b=e.target.closest('[data-tpedit]');if(b)tpOpen(b.dataset.tpedit);});
+$('#tp-list').addEventListener('click',e=>{if(e.target.closest('[data-tpback]')){const o=tpOnly;tpOnly=null;showTab(o.back);window.scrollTo(0,o.y||0);return;}if(e.target.closest('[data-tpall]')){tpOnly=null;renderTipps();return;}const b=e.target.closest('[data-tpedit]');if(b)tpOpen(b.dataset.tpedit);});
 $('#tp-f').onsubmit=e=>{
   e.preventDefault();
   const d={titel:$('#tp-t').value.trim(),kat:$('#tp-k').value,text:$('#tp-x').value.trim()};
