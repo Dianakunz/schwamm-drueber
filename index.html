@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Schwamm drüber, Version 1.15 vom 22.11.2026 -->
+<!-- Schwamm drüber, Version 1.16 vom 22.11.2026 -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -91,6 +91,16 @@ input,select,textarea{width:100%;margin-top:3px;padding:9px;border:1px solid var
 .sug{font-size:.85rem;color:var(--muted)}
 .info{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--accent);font-weight:700}
 .ctip{flex:1 0 100%;font-size:.85rem;color:var(--muted);background:var(--bg);border-radius:8px;padding:8px}
+.tp #tp-q{margin:12px 0 0}
+.tip{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:8px 0;padding:0 14px}
+.tip summary{cursor:pointer;padding:13px 0;font-weight:600;list-style:none;display:flex;gap:8px;justify-content:space-between;align-items:center}
+.tip summary::-webkit-details-marker{display:none}
+.tip summary::after{content:"+";color:var(--muted);font-weight:400;font-size:1.2rem}
+.tip[open] summary::after{content:"–"}
+.tip .tb{padding:0 0 12px}.tip .tb p{margin:6px 0}
+.tip .meta{font-size:.82rem;color:var(--muted);margin-top:8px}
+.tip .badge{display:inline-block;border:1px solid var(--line);border-radius:10px;padding:1px 8px;font-size:.78rem;color:var(--muted);margin-right:6px}
+.tip .warn{border-left:3px solid var(--late);padding-left:10px}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px}.chips:empty{display:none}
 .cl{font-size:.8rem;color:var(--muted);align-self:center;white-space:nowrap}
 .link{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0;font:inherit}
@@ -228,6 +238,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <section id="garten" class="panel"><div id="gview" class="chips"></div><div id="gchips" class="chips"></div><div id="glist"></div></section>
   <section id="jahr" class="panel"></section>
   <section id="einkauf" class="panel ek"><form id="ek-form"><input id="ek-in" list="ek-names" placeholder="Was soll auf die Liste?" maxlength="80" autocomplete="off" aria-label="Neuer Eintrag"><datalist id="ek-names"></datalist><button class="primary">Hinzufügen</button></form><div id="ek-list"></div></section>
+  <section id="tipps" class="panel tp"><input id="tp-q" type="search" placeholder="Tipps suchen …" autocomplete="off" aria-label="Tipps suchen"><div id="tp-chips" class="chips"></div><div id="tp-list"></div><p class="hint"><button type="button" class="link" id="tp-new">Eigenen Tipp hinzufügen</button></p></section>
   <section id="daten" class="panel data"><h2 class="opth" style="margin-top:12px">Optionen</h2>
     <details class="opt"><summary>Garten und Erinnerungen</summary>
       <h4>Garten</h4>
@@ -269,7 +280,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
       <button id="btn-wipe" class="danger">Alle Daten löschen</button>
       <p class="hint">Löscht Aufgaben, Historie und Einstellungen auf diesem Gerät. Speichere vorher eine Sicherung, wenn du etwas behalten willst.</p>
     </details>
-    <p class="hint" style="text-align:center;margin-top:18px">Version 1.15 vom 22.11.2026</p>
+    <p class="hint" style="text-align:center;margin-top:18px">Version 1.16 vom 22.11.2026</p>
   </section>
 </main>
 <button class="fab" id="fab" aria-label="Neue Aufgabe">+</button>
@@ -313,6 +324,13 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
 </dialog>
 <dialog id="help"><div class="hhead"><h3 tabindex="-1" autofocus>Anleitung</h3><button type="button" id="help-x" aria-label="Anleitung schließen">✕</button></div><div id="help-toc" class="toc"></div><div id="help-body"></div></dialog>
 <dialog id="ask"><p id="ask-msg"></p><div class="btns"><button type="button" id="ask-no">Abbrechen</button><button type="button" class="primary" id="ask-yes">OK</button></div></dialog>
+<dialog id="tp-dlg"><form id="tp-f">
+  <h3 id="tp-ftitle" tabindex="-1" autofocus>Eigener Tipp</h3>
+  <label>Titel<input id="tp-t" maxlength="80" required placeholder="z. B. Kalk im Wasserkocher"></label>
+  <label>Kategorie<select id="tp-k"></select></label>
+  <label>Tipp<textarea id="tp-x" rows="6" required maxlength="1500" placeholder="So geht es …"></textarea></label>
+  <div class="btns"><button type="button" id="tp-del" class="danger">Löschen</button><button type="button" id="tp-cancel">Abbrechen</button><button class="primary">Speichern</button></div>
+</form></dialog>
 <dialog id="he"><form id="hef">
   <h3 id="he-title" tabindex="-1" autofocus>Erledigt-Eintrag</h3>
   <label>Erledigt am<input id="he-date" type="date" required></label>
@@ -335,6 +353,7 @@ details.opt h4{margin:16px 0 2px;font-size:.95rem}
   <button data-tab="jahr">Jahr</button>
   <button data-tab="einkauf" id="nav-einkauf" style="display:none">Einkauf</button>
   <button data-tab="historie">Historie</button>
+  <button data-tab="tipps">Tipps</button>
 </nav>
 
 <dialog id="dlg">
@@ -403,6 +422,7 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <li><b>Garten:</b> erscheint, wenn der Garten aktiviert ist (Hinweis oben im Reiter Haus oder unter Optionen, dem Zahnrad oben rechts). Filter nach Kategorie, mit denselben Ansichten wie im Haus.</li>
 <li><b>Jahr:</b> Übersicht über die nächsten 12 Monate oder ein Kalenderjahr, Haus und Garten in zwei Farben.</li>
 <li><b>Historie:</b> was du erledigt hast, mit Diagrammen.</li>
+<li><b>Tipps:</b> Hausmittel und Putztipps zum Nachschlagen, auch eigene.</li>
 <li><b>Zahnrad oben rechts (Optionen):</b> Garten, Erinnerungen, Abwesenheit, Darstellung, Einkaufsliste, Sicherung, Plan teilen. Nochmal auf das Zahnrad tippen bringt dich zurück. Das Fragezeichen links daneben öffnet diese Anleitung; oben stehen die Abschnitte zum Antippen, und das ✕ oben rechts bleibt beim Scrollen sichtbar.</li>
 <li><b>Einkauf:</b> optional, erscheint nach dem Einschalten unter Optionen.</li>
 </ul>
@@ -465,6 +485,13 @@ const HELP_HTML=`<h4>Die Reiter</h4>
 <ul>
 <li>Zeigt, was du erledigt hast. Der Zeitraum der Diagramme lässt sich umstellen.</li>
 </ul>
+<h4>Der Reiter Tipps</h4>
+<ul>
+<li>Sammlung von Hausmitteln und Putztipps, zum Beispiel Entkalken mit Zitronensäure oder Reinigen mit Natron. Tippe auf einen Tipp, um ihn aufzuklappen. Unter den geprüften Tipps stehen die Quellen zum Nachlesen.</li>
+<li>Oben suchst du nach einem Stichwort oder wählst eine Kategorie.</li>
+<li>„Eigenen Tipp hinzufügen“ legt einen eigenen Tipp an; er lässt sich bearbeiten und löschen und ist Teil der Sicherung.</li>
+<li>Bitte beachte die Hinweise unter „Sicherheit“: Zum Beispiel dürfen Säuren nie mit Chlorreinigern gemischt werden.</li>
+</ul>
 <h4>Der Reiter Einkauf (optional)</h4>
 <ul>
 <li>Unter „Optionen“, „Einkaufsliste“ einschalten, dann erscheint der Reiter „Einkauf“.</li>
@@ -514,7 +541,7 @@ const KATALOG=[
 ['Saugen','H',W,1,'Wochen',0,'Einmal pro Woche, Flur und Küche bei Bedarf öfter. Erst Staub wischen, dann saugen. Alle 4 Wochen auch unter Möbeln und Betten saugen.',null,[['Unter Möbeln und Betten saugen',4]]],
 ['Wischen','H',W,2,'Wochen',0,'Alle 2 Wochen, nach dem Saugen. Küche und Bad bei Bedarf öfter.'],
 ['Staub wischen','H',W,1,'Wochen',0,'Wöchentlich mit feuchtem Tuch, von oben nach unten. Alle 4 Wochen auch Lampen, Regalböden und Bilderrahmen.',null,[['Lampen, Regalböden und Bilderrahmen abstauben',4]]],
-['Küche putzen','H',W,1,'Wochen',0,'Arbeitsflächen täglich abwischen, gründlich einmal pro Woche. Die Zusätze wechseln sich ab: Mikrowelle alle 2 Wochen, Kühlschrank etwa monatlich, Abfluss des Spülbeckens etwa alle 2 Monate, Backofen etwa alle 3 Monate (Pyrolyse- oder Reinigungsprogramm nutzen, wenn vorhanden).',null,[['Mikrowelle auswischen',2,2],['Kühlschrank auswischen',4,1],['Spülbecken-Abfluss reinigen',8,3],['Backofen reinigen',12,7]]],
+['Küche putzen','H',W,1,'Wochen',0,'Arbeitsflächen täglich abwischen, gründlich einmal pro Woche. Die Zusätze wechseln sich ab: Mikrowelle alle 2 Wochen, Kühlschrank etwa monatlich, Abfluss des Spülbeckens etwa alle 2 Monate, Backofen etwa alle 3 Monate (Pyrolyse- oder Reinigungsprogramm nutzen, wenn vorhanden), Wasserkocher entkalken alle 6 Wochen.',null,[['Mikrowelle auswischen',2,2],['Kühlschrank auswischen',4,1],['Spülbecken-Abfluss reinigen',8,3],['Backofen reinigen',12,7],['Wasserkocher entkalken',6,3]]],
 ['Bad putzen','H',W,1,'Wochen',0,'Wöchentlich. Duschwand und Armaturen nach dem Duschen abziehen gegen Kalk. Den Duschkopf etwa monatlich entkalken, den Abfluss etwa alle 2 Monate reinigen.',null,[['Duschkopf und Armaturen entkalken',4],['Abfluss reinigen',8,6]]],
 ['Wäsche waschen','H',W,1,'Wochen',0,'Je nach Haushalt 1 bis 3 Mal pro Woche. Volle Maschinen sparen Energie.'],
 ['Einkaufen','H',W,1,'Wochen',0,'Einmal pro Woche mit Einkaufsliste, Vorräte vorher kurz prüfen.'],
@@ -525,7 +552,6 @@ const KATALOG=[
 ['Airfryer reinigen','H',W,1,'Wochen',0,'Korb und Schublade nach jedem Gebrauch auswaschen, einmal pro Woche gründlich. Etwa monatlich auch Heizspirale und Innenraum auswischen, nur ausgesteckt und abgekühlt.',null,[['Heizspirale und Innenraum auswischen',4]]],
 ['Couch absaugen','H',W,1,'Monate',0,'Monatlich mit Polsterdüse, Kissen vorher ausklopfen.'],
 ['Fußleisten abstauben','H',W,1,'Monate',0,'Monatlich, am besten zusammen mit dem Staubwischen.'],
-['Wasserkocher entkalken','H',W,6,'Wochen',0,'Alle 4 bis 8 Wochen, bei hartem Wasser öfter. Zitronensäure verwenden und gut nachspülen.'],
 ['Kaffeemaschine reinigen','H',W,1,'Wochen',0,'Wöchentlich Brühgruppe und Behälter reinigen, bei Vollautomaten mit Milchsystem auch dieses gründlich. Die Zusätze erscheinen automatisch zum passenden Zeitpunkt (Tablette etwa monatlich, Entkalken etwa alle 2 Monate, je nach Wasserhärte). Herstellerangaben beachten.',null,[['Mit Reinigungstablette reinigen',4],['Entkalken',8,6]]],
 ['Spülmaschine reinigen','H',W,1,'Monate',0,'Sieb monatlich reinigen (bei starker Nutzung öfter) und die Dichtung auswischen. Etwa alle 3 Monate zusätzlich ein Leerlauf mit Maschinenreiniger.',null,[['Leerlauf mit Maschinenreiniger',3]]],
 ['Waschmaschine reinigen','H',W,2,'Monate',0,'Alle 2 Monate Dichtung und Waschmittelschublade auswischen und einen Leerlauf mit mindestens 60 Grad laufen lassen (wer viel bei 30 bis 40 Grad wäscht, eher monatlich). Das Flusensieb etwa alle 4 Monate reinigen. Die Tür danach offen lassen. Wer einen Trockner hat: etwa alle 6 Monate Kondensator und Flusensieb-Fach reinigen (Herstellerangaben beachten); den Zusatz kannst du bei der Aufgabe abwählen, wenn du keinen hast.',null,[['Flusensieb reinigen',2],['Trockner: Kondensator und Flusensieb-Fach reinigen',3]]],
@@ -861,6 +887,7 @@ function render(){
   try{renderGantt();}catch(e){}
   try{renderAbs();}catch(e){}
   try{renderEinkauf();}catch(e){}
+  try{renderTipps();}catch(e){}
 }
 
 function toast(msg,undo){
@@ -1495,6 +1522,7 @@ function applySettings(){
   $('#set-garten').checked=on;
   if(!on&&tab==='garten')showTab('aufgaben');
   state.einkauf=Array.isArray(state.einkauf)?state.einkauf:[];
+  state.tipps=Array.isArray(state.tipps)?state.tipps:[];
   {let th='auto';try{th=localStorage.getItem('haushalt-theme-v1')||'auto';}catch(e){}
    $('#set-theme').value=th;
    if(th==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',th);
@@ -1589,6 +1617,227 @@ function bkInfo(){
   $('#set-bk').checked=!st.bkOff;
   $('#bk-info').textContent=st.lastBackup?'Letzte Sicherung: '+fmt(st.lastBackup)+'.':'Noch keine Sicherung gespeichert.';
 }
+const TIPPS=[
+[
+"wk",
+"Entkalken",
+"Wasserkocher mit Zitronensäure entkalken",
+"Etwa 2 bis 3 Esslöffel Zitronensäurepulver in einem Liter Wasser auflösen und im Wasserkocher ungefähr eine Stunde einwirken lassen. Danach gründlich mit klarem Wasser ausspülen. Wer mag, kocht noch einmal klares Wasser auf und schüttet es weg.\nDie Quellen sind sich uneinig: Manche kochen die Lösung auf, andere raten davon ab, weil sich oberhalb von etwa 40 Grad unlösliches Calciumcitrat bilden kann. Die Variante ohne Aufkochen ist die vorsichtigere.",
+[
+[
+"Öko-Test: Wasserkocher entkalken",
+"https://www.oekotest.de/bauen-wohnen/wasserkocher-entkalken-und-sofort-energie-sparen-so-geht-s_13389_1.html"
+],
+[
+"ZDFheute: Zitronensäure im Haushalt",
+"https://www.zdfheute.de/ratgeber/zitronensaeure-putzen-hausmittel-anwendung-kalk-risiken-100.html"
+]
+],
+1
+],
+[
+"wm",
+"Entkalken",
+"Waschmaschine mit Zitronensäure entkalken",
+"5 bis 10 Esslöffel Zitronensäurepulver direkt in die Trommel geben und einen Waschgang mit höchstens 40 Grad laufen lassen. Bei höheren Temperaturen kann sich unlösliches Calciumcitrat bilden. Zusätzlich die Herstellerangaben der Maschine beachten.",
+[
+[
+"ZDFheute: Zitronensäure im Haushalt",
+"https://www.zdfheute.de/ratgeber/zitronensaeure-putzen-hausmittel-anwendung-kalk-risiken-100.html"
+]
+],
+1
+],
+[
+"gd",
+"Bad",
+"Glasdusche entkalken",
+"Essigessenz oder Zitronensäure im Verhältnis 1 zu 2 mit Wasser mischen (ein Teil Säure, zwei Teile Wasser) und in eine Sprühflasche füllen. Auf die Scheibe sprühen und 5 bis 10 Minuten einwirken lassen, ohne dass es antrocknet. Mit einem nassen Lappen nachwischen, mit klarem Wasser abspülen und mit dem Abzieher trocknen. Dabei Handschuhe tragen.\nNicht auf Marmor und anderen kalkhaltigen Natursteinen anwenden.",
+[
+[
+"Utopia: Duschkabine aus Glas reinigen",
+"https://utopia.de/ratgeber/nervig-aber-noetig-so-reinigst-du-duschkabinen-aus-glas-am-einfachsten-v2_859762/"
+],
+[
+"ZDFheute: Zitronensäure im Haushalt",
+"https://www.zdfheute.de/ratgeber/zitronensaeure-putzen-hausmittel-anwendung-kalk-risiken-100.html"
+]
+],
+1
+],
+[
+"ap",
+"Bad",
+"Abperleffekt auf der Duschscheibe (eigener Tipp, nicht geprüft)",
+"Wasser, Spülmittel, Zitronensäure und Klarspüler in einer Sprühflasche mischen, auf Glasscheiben und Armaturen sprühen, mit einem Tuch einreiben und anschließend abspülen.\nDiese Mischung habe ich in den geprüften Quellen nicht gefunden, die Mengen sind offen. Probiere sie erst an einer kleinen Stelle aus und kombiniere sie nie mit Chlorreinigern.",
+[],
+0
+],
+[
+"kz",
+"Sicherheit",
+"Wo Zitronensäure nicht hingehört",
+"Nicht für Marmor und andere kalkhaltige Flächen, Aluminium und Emaille. Bei Messing und Armaturen nur sehr schwach dosieren. Hohe Temperaturen (über etwa 40 Grad) vermeiden.\nKonzentrierte Lösungen nicht ohne Handschuhe und Schutzbrille anwenden, und nichts davon in die Augen bringen.",
+[
+[
+"ZDFheute: Zitronensäure im Haushalt",
+"https://www.zdfheute.de/ratgeber/zitronensaeure-putzen-hausmittel-anwendung-kalk-risiken-100.html"
+]
+],
+1
+],
+[
+"ch",
+"Sicherheit",
+"Säuren nie mit Chlorreinigern mischen",
+"Säurehaltige Reiniger (auch Essig, Zitronensäure, WC-Reiniger) dürfen nicht mit Chlorreinigern oder anderen Reinigern mit Aktivchlor gemischt werden. Es kann giftiges Chlorgas entstehen. Das gilt auch, wenn man sie kurz nacheinander anwendet. Nach einem Reiniger gründlich lüften und nachspülen.\nSaure Reiniger heben außerdem die Wirkung alkalischer Reiniger auf, wenn man sie mischt.",
+[
+[
+"t-online: Welche Reinigungsmittel man nicht mischen sollte",
+"https://www.t-online.de/leben/id_62312014/reinigungsmittel-welche-produkte-sie-auf-keinen-fall-mischen-sollten.html"
+]
+],
+1,
+"warn"
+],
+[
+"fe",
+"Küche",
+"Fett und Eiweißreste: Natron oder Spülmittel statt Säure",
+"Gegen Fett und Eiweißreste wirkt Zitronensäure kaum. Besser sind Spülmittel (Tenside) oder Natron.",
+[
+[
+"ZDFheute: Zitronensäure im Haushalt",
+"https://www.zdfheute.de/ratgeber/zitronensaeure-putzen-hausmittel-anwendung-kalk-risiken-100.html"
+]
+],
+1
+],
+[
+"kk",
+"Küche",
+"Kühlschrank innen mit Zitronensäure auswischen",
+"In Wasser gelöste Zitronensäure eignet sich zum Auswischen der Innenflächen. Laut einer Studie, die ZDFheute nennt, verringert sie Keime. Danach mit klarem Wasser nachwischen. Gummidichtungen nur mit verdünnter Lösung behandeln.",
+[
+[
+"ZDFheute: Zitronensäure im Haushalt",
+"https://www.zdfheute.de/ratgeber/zitronensaeure-putzen-hausmittel-anwendung-kalk-risiken-100.html"
+]
+],
+1
+],
+[
+"nb",
+"Natron",
+"Natron oder Backpulver?",
+"Natron ist reines Natriumhydrogencarbonat. Backpulver ist eine Mischung aus Natron, Säure und Stärke. Zum Putzen lassen sich beide verwenden, weil vor allem das Natriumhydrogencarbonat wirkt. Reines Natron ist günstiger und ergiebiger.",
+[
+[
+"Utopia: Natron vs. Backpulver",
+"https://utopia.de/ratgeber/natron-vs-backpulver-das-ist-der-unterschied/"
+]
+],
+1
+],
+[
+"np",
+"Natron",
+"Backofen, Töpfe und Backbleche mit Natron-Paste",
+"Natronpulver und Wasser im Verhältnis 1 zu 1 zu einer Paste rühren, auf die Verschmutzung geben und einige Stunden einwirken lassen. Danach abschrubben und mit klarem Wasser nachwischen.",
+[
+[
+"Utopia: Natron als Hausmittel",
+"https://utopia.de/ratgeber/natron-als-hausmittel-vielseitig-und-oekologisch_24133/"
+]
+],
+1
+],
+[
+"nf",
+"Natron",
+"Fugen im Bad mit Natron reinigen",
+"3 Esslöffel Natron, 1 Esslöffel Wasser und 1 Teelöffel Essigessenz zu einer Paste mischen. Mit einer alten Zahnbürste in die Fugen einarbeiten, einige Stunden einwirken lassen, abschrubben und feucht nachwischen. Handschuhe tragen.\nNicht für Silikonfugen verwenden.",
+[
+[
+"Utopia: Natron als Hausmittel",
+"https://utopia.de/ratgeber/natron-als-hausmittel-vielseitig-und-oekologisch_24133/"
+]
+],
+1
+],
+[
+"ng",
+"Natron",
+"Gerüche aus Polstern und Teppichen nehmen",
+"Feines Natronpulver aufstreuen, über Nacht einwirken lassen und am nächsten Tag absaugen. Das hilft auch bei Autositzen.",
+[
+[
+"Utopia: Natron als Hausmittel",
+"https://utopia.de/ratgeber/natron-als-hausmittel-vielseitig-und-oekologisch_24133/"
+]
+],
+1
+],
+[
+"ab",
+"Natron",
+"Abfluss mit Natron und Essig",
+"Natron mit Essig setzt Kohlendioxid frei, das Ablagerungen im Abfluss lockern kann. Gefährliche Stoffe entstehen dabei nicht. Den Abfluss dabei nicht verschließen, weil sich sonst Druck aufbauen kann. Bei Kunststoffrohren sparsam einsetzen, weil häufiges Anwenden sie porös machen kann.\nWie gut das Verfahren wirklich wirkt, ist nicht belegt.",
+[
+[
+"t-online: Essig und Backpulver im Abfluss",
+"https://www.t-online.de/heim-garten/haushaltstipps/id_100189250/sind-essig-und-backpulver-im-abfluss-gefaehrlich-tipps.html"
+]
+],
+1
+]
+];
+const TKATS=["Entkalken", "Bad", "Küche", "Natron", "Sicherheit", "Sonstiges"];
+let tpKat='Alle',tpEdit=null;
+function tpCard(t,own){
+  const paras=t.text.split('\n').map(p=>'<p'+(t.warn?' class="warn"':'')+'>'+esc(p)+'</p>').join('');
+  const src=(t.q&&t.q.length)?'<div class="meta">Quellen: '+t.q.map(x=>'<a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'</a>').join(' · ')+'</div>':'';
+  const badge=own?'<span class="badge">Eigener Tipp</span>':(t.geprueft?'':'<span class="badge">Nicht geprüft</span>');
+  const edit=own?'<p class="hint"><button type="button" class="link" data-tpedit="'+esc(t.id)+'">Bearbeiten</button></p>':'';
+  return '<details class="tip"><summary><span>'+esc(t.titel)+'</span></summary><div class="tb">'+(badge?'<p>'+badge+'</p>':'')+paras+src+edit+'</div></details>';
+}
+function renderTipps(){
+  const q=($('#tp-q').value||'').trim().toLowerCase();
+  const all=TIPPS.map(a=>({id:a[0],kat:a[1],titel:a[2],text:a[3],q:a[4],geprueft:!!a[5],warn:a[6]==='warn',own:false}))
+    .concat((state.tipps||[]).map(t=>({id:t.id,kat:t.kat,titel:t.titel,text:t.text,q:[],geprueft:true,warn:false,own:true})));
+  const kats=TKATS.filter(k=>all.some(t=>t.kat===k));
+  if(tpKat!=='Alle'&&!kats.includes(tpKat))tpKat='Alle';
+  $('#tp-chips').innerHTML=chips(['Alle'].concat(kats),tpKat,'tk');
+  const l=all.filter(t=>(tpKat==='Alle'||t.kat===tpKat)&&(!q||(t.titel+' '+t.text+' '+t.kat).toLowerCase().includes(q)));
+  $('#tp-list').innerHTML=l.length?l.map(t=>tpCard(t,t.own)).join(''):'<p class="empty">Nichts gefunden. Mit „Eigenen Tipp hinzufügen“ schreibst du selbst einen.</p>';
+}
+function tpOpen(id){
+  tpEdit=id||null;
+  const t=id?(state.tipps||[]).find(x=>x.id===id):null;
+  $('#tp-ftitle').textContent=t?'Tipp bearbeiten':'Eigener Tipp';
+  $('#tp-k').innerHTML=TKATS.map(k=>'<option>'+esc(k)+'</option>').join('');
+  $('#tp-t').value=t?t.titel:'';$('#tp-x').value=t?t.text:'';$('#tp-k').value=t?t.kat:(TKATS.includes(tpKat)?tpKat:'Sonstiges');
+  $('#tp-del').style.display=t?'':'none';
+  $('#tp-dlg').showModal();
+}
+$('#tp-q').oninput=renderTipps;
+$('#tp-new').onclick=()=>tpOpen(null);
+$('#tp-cancel').onclick=()=>$('#tp-dlg').close();
+$('#tp-chips').addEventListener('click',e=>{const b=e.target.closest('[data-tk]');if(b){tpKat=b.dataset.tk;renderTipps();}});
+$('#tp-list').addEventListener('click',e=>{const b=e.target.closest('[data-tpedit]');if(b)tpOpen(b.dataset.tpedit);});
+$('#tp-f').onsubmit=e=>{
+  e.preventDefault();
+  const d={titel:$('#tp-t').value.trim(),kat:$('#tp-k').value,text:$('#tp-x').value.trim()};
+  if(!d.titel||!d.text)return;
+  state.tipps=state.tipps||[];
+  if(tpEdit){const t=state.tipps.find(x=>x.id===tpEdit);if(t)Object.assign(t,d);}else state.tipps.push(Object.assign({id:uid()},d));
+  save();$('#tp-dlg').close();renderTipps();
+};
+$('#tp-del').onclick=()=>{
+  const t=(state.tipps||[]).find(x=>x.id===tpEdit);if(!t)return;
+  askConfirm('„'+t.titel+'“ löschen?',()=>{state.tipps=state.tipps.filter(x=>x.id!==tpEdit);save();$('#tp-dlg').close();renderTipps();},'Löschen');
+};
+
 function renderEinkauf(){
   const l=state.einkauf||[],open=l.filter(x=>!x.done),done=l.filter(x=>x.done);
   const row=x=>'<div class="cr'+(x.done?' done':'')+'"><label><input type="checkbox" data-ek="'+x.id+'"'+(x.done?' checked':'')+'><span>'+esc(x.text)+'</span></label><button type="button" class="mini mute" data-ekdel="'+x.id+'" aria-label="Eintrag löschen">✕</button></div>';
